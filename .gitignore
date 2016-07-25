@@ -25,6 +25,7 @@
 .idea/dynamic.xml
 .idea/uiDesigner.xml
 .idea/remote-mappings.xml
+.idea/deployment.xml
 
 # Gradle:
 .idea/gradle.xml
