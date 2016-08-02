@@ -1,3 +1,4 @@
+/bin_deps/fceux/fcs
 
 # Created by https://www.gitignore.io/api/ipythonnotebook,pycharm
 
@@ -16,6 +17,7 @@
 .idea/dictionaries
 .idea/vcs.xml
 .idea/jsLibraryMappings.xml
+.idea/misc.xml
 
 # Sensitive or high-churn files:
 .idea/dataSources.ids
