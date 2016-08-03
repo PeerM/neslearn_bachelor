@@ -98,3 +98,12 @@ class Emu2:
 
     def unpause(self):
         self._send_command("emu.unpause()")
+
+    def pause(self):
+        self._send_command("emu.pause()")
+
+    def softreset(self):
+        self._send_command("emu.softreset()")
+
+    def poweron(self):
+        self._send_command("emu.poweron()")
