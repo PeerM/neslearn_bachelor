@@ -2,6 +2,10 @@ import socket
 import re
 
 
+def _input_py_to_lua(input_dict):
+    return "{" + ", ".join([key + "=" + str(value).lower() for (key, value) in input_dict.items()]) + "}"
+
+
 class Emu2:
     def __init__(self, soc=None):
         self.soc = soc
@@ -66,11 +70,7 @@ class Emu2:
         return {pair[0]: pair[1] == "true" for pair in re.findall(r"(\w*)=(true|false)", received)}
 
     def input_write(self, input_dict):
-        """
-        Untested
-        :type input_dict: {items}
-        """
-        lua_side = "{" + ", ".join([key + "=" + str(value).lower() for (key, value) in input_dict.items()]) + "}"
+        lua_side = _input_py_to_lua(input_dict)
         self._send_command("joypad.write(1,{}); pos_feedback()".format(lua_side))
         return self._recv_feedback()
 
@@ -91,3 +91,10 @@ class Emu2:
             ram_frame_list.append(self.get_ram())
             inputs_list.append(self.input_read())
         return (ram_frame_list, inputs_list)
+
+    def full_step(self, py_input):
+        self._send_command("full_step({})".format(_input_py_to_lua(py_input)))
+        return self.soc.recv(2048)
+
+    def unpause(self):
+        self._send_command("emu.unpause()")
