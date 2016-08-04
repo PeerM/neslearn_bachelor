@@ -49,11 +49,11 @@ class DeconvCallback(Callback):
         self.dataset_pct = dataset_pct
         self.name = "Guided Bprop"
 
-    def _progress_update(self, tag, curr, total, unit, time, blockchar='\u2588'):
+    def _progress_update(self, tag, curr, total, unit, time, blockchar=u'\u2588'):
         # clear and redraw progress bar
         max_bar_width = 20
         bar_width = int(float(curr) / total * max_bar_width)
-        s = 'Visualization  [{} |{:<%s}| {:4}/{:<4} {}, {:.2f}s]' % max_bar_width
+        s = u'Visualization  [{} |{:<%s}| {:4}/{:<4} {}, {:.2f}s]' % max_bar_width
         progress_string = s.format(tag, blockchar * bar_width, curr, total, unit, time)
         sys.stdout.write('\r' + progress_string.encode('utf-8'))
         sys.stdout.flush()

@@ -1,0 +1,3 @@
+matplotlib
+neon
+h5py

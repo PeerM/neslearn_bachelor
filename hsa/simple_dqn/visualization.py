@@ -1,7 +1,7 @@
 from neon.data import ArrayIterator
-from nvis.callbacks import DeconvCallback
-from nvis.figure import deconv_summary_page
-from nvis.data import h5_deconv_data
+from .nvis.callbacks import DeconvCallback
+from .nvis.figure import deconv_summary_page
+from .nvis.data import h5_deconv_data
 import h5py
 
 def visualize(model, data, max_fm, filename):

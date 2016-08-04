@@ -8,7 +8,7 @@ class ReplayMemory:
     self.size = size
     # preallocate memory
     self.actions = np.empty(self.size, dtype = np.uint8)
-    self.rewards = np.empty(self.size, dtype = np.integer)
+    self.rewards = np.empty(self.size, dtype = np.int32)
     self.screens = np.empty((self.size, args.screen_height, args.screen_width), dtype = np.uint8)
     self.terminals = np.empty(self.size, dtype = np.bool)
     self.history_length = args.history_length
@@ -44,7 +44,7 @@ class ReplayMemory:
       return self.screens[(index - (self.history_length - 1)):(index + 1), ...]
     else:
       # otherwise normalize indexes and use slower list based access
-      indexes = [(index - i) % self.count for i in reversed(range(self.history_length))]
+      indexes = [(index - i) % self.count for i in reversed(list(range(self.history_length)))]
       return self.screens[indexes, ...]
 
   def getMinibatch(self):

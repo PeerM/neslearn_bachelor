@@ -49,8 +49,8 @@ class Statistics:
     self.num_games = 0
     self.game_rewards = 0
     self.average_reward = 0
-    self.min_game_reward = sys.maxint
-    self.max_game_reward = -sys.maxint - 1
+    self.min_game_reward = sys.maxsize
+    self.max_game_reward = -sys.maxsize - 1
     self.last_exploration_rate = 1
     self.average_cost = 0
 

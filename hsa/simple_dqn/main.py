@@ -1,11 +1,11 @@
 import logging
 logging.basicConfig(format='%(asctime)s %(message)s')
 
-from environment import ALEEnvironment, GymEnvironment
-from replay_memory import ReplayMemory
-from deepqnetwork import DeepQNetwork
-from agent import Agent
-from statistics import Statistics
+#from .environment import ALEEnvironment, GymEnvironment
+from .replay_memory import ReplayMemory
+from .deepqnetwork import DeepQNetwork
+from .agent import Agent
+from .statistics import Statistics
 import random
 import argparse
 import sys
@@ -90,15 +90,16 @@ if args.random_seed:
   random.seed(args.random_seed)
 
 # instantiate classes
-if args.environment == 'ale':
-  env = ALEEnvironment(args.game, args)
-  logger.info("Using ALE Environment")
-elif args.environment == 'gym':
-  logger.handlers.pop()
-  env = GymEnvironment(args.game, args)
-  logger.info("Using Gym Environment")
-else:
-  assert False, "Unknown environment" + args.environment
+# if args.environment == 'ale':
+#   env = ALEEnvironment(args.game, args)
+#   logger.info("Using ALE Environment")
+# elif args.environment == 'gym':
+#   logger.handlers.pop()
+#   env = GymEnvironment(args.game, args)
+#   logger.info("Using Gym Environment")
+# else:
+env = None
+print("Unknown environment" + args.environment)
 
 mem = ReplayMemory(args.replay_size, args)
 net = DeepQNetwork(env.numActions(), args)
@@ -115,9 +116,9 @@ if args.play_games:
   agent.play(args.play_games)
   stats.write(0, "play")
   if args.visualization_file:
-    from visualization import visualize
+    from .visualization import visualize
     # use states recorded during gameplay. NB! Check buffer size, that it can accomodate one game!
-    states = [agent.mem.getState(i) for i in xrange(agent.history_length, agent.mem.current - agent.random_starts)]
+    states = [agent.mem.getState(i) for i in range(agent.history_length, agent.mem.current - agent.random_starts)]
     logger.info("Collected %d game states" % len(states))
     import numpy as np
     states = np.array(states)
@@ -133,7 +134,7 @@ if args.random_steps:
   stats.write(0, "random")
 
 # loop over epochs
-for epoch in xrange(args.start_epoch, args.epochs):
+for epoch in range(args.start_epoch, args.epochs):
   logger.info("Epoch #%d" % (epoch + 1))
 
   if args.train_steps:

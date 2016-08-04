@@ -62,12 +62,12 @@ def h5_deconv_data(f):
     """
     ret = list()
 
-    if 'deconv' not in list(f.keys()):
+    if 'deconv' not in f.keys():
         return None
     act_data = f['deconv/max_act']
     img_data = f['deconv/img']
 
-    for layer in list(act_data.keys()):
+    for layer in act_data.keys():
         layer_data = list()
         for fm in range(act_data[layer]['vis'].shape[0]):
 
