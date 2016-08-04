@@ -1,8 +1,7 @@
-from neon.util.argparser import NeonArgparser
 from neon.backends import gen_backend
 from neon.initializers import Gaussian
 from neon.optimizers import RMSProp, Adam, Adadelta
-from neon.layers import Affine, Conv, GeneralizedCost
+from neon.layers import Affine, GeneralizedCost
 from neon.transforms import Rectlin
 from neon.models import Model
 from neon.transforms import SumSquared
@@ -19,7 +18,7 @@ class DeepQNetwork:
     self.batch_size = args.batch_size
     self.discount_rate = args.discount_rate
     self.history_length = args.history_length
-    self.screen_dim = (args.screen_height, args.screen_width)
+    self.screen_dim = (args.screen_height, )
     self.clip_error = args.clip_error
     self.min_reward = args.min_reward
     self.max_reward = args.max_reward
@@ -34,7 +33,7 @@ class DeepQNetwork:
                  stochastic_round = args.stochastic_round)
 
     # prepare tensors once and reuse them
-    self.input_shape = (self.history_length,) + self.screen_dim + (self.batch_size,)
+    self.input_shape = self.screen_dim + (self.history_length,) + (self.batch_size,)
     self.input = self.be.empty(self.input_shape)
     self.input.lshape = self.input_shape # HACK: needed for convolutional networks
     self.targets = self.be.empty((self.num_actions, self.batch_size))
@@ -58,7 +57,7 @@ class DeepQNetwork:
       self.optimizer = Adadelta(decay = args.decay_rate, 
           stochastic_round = args.stochastic_round)
     else:
-      assert false, "Unknown optimizer"
+      assert False, "Unknown optimizer"
 
     # create target model
     self.target_steps = args.target_steps
@@ -79,21 +78,15 @@ class DeepQNetwork:
     # create network
     init_norm = Gaussian(loc=0.0, scale=0.01)
     layers = []
-    # The first hidden layer convolves 32 filters of 8x8 with stride 4 with the input image and applies a rectifier nonlinearity.
-    layers.append(Conv((8, 8, 32), strides=4, init=init_norm, activation=Rectlin(), batch_norm=self.batch_norm))
-    # The second hidden layer convolves 64 filters of 4x4 with stride 2, again followed by a rectifier nonlinearity.
-    layers.append(Conv((4, 4, 64), strides=2, init=init_norm, activation=Rectlin(), batch_norm=self.batch_norm))
-    # This is followed by a third convolutional layer that convolves 64 filters of 3x3 with stride 1 followed by a rectifier.
-    layers.append(Conv((3, 3, 64), strides=1, init=init_norm, activation=Rectlin(), batch_norm=self.batch_norm))
-    # The final hidden layer is fully-connected and consists of 512 rectifier units.
-    layers.append(Affine(nout=512, init=init_norm, activation=Rectlin(), batch_norm=self.batch_norm))
+    layers.append(Affine(nout=1024, init=init_norm, activation=Rectlin(), batch_norm=self.batch_norm))
     # The output layer is a fully-connected linear layer with a single output for each valid action.
     layers.append(Affine(nout=num_actions, init = init_norm))
     return layers
 
   def _setInput(self, states):
     # change order of axes to match what Neon expects
-    states = np.transpose(states, axes = (1, 2, 3, 0))
+    # PEER: I think this is for the for history size again
+    states = np.transpose(states, axes = (2,1,0))
     # copy() shouldn't be necessary here, but Neon doesn't work otherwise
     self.input.set(states.copy())
     # normalize network input between 0 and 1
@@ -102,8 +95,9 @@ class DeepQNetwork:
   def train(self, minibatch, epoch):
     # expand components of minibatch
     prestates, actions, rewards, poststates, terminals = minibatch
-    assert len(prestates.shape) == 4
-    assert len(poststates.shape) == 4
+    # PEER: I think these 4s are for the two dimensional screen, which I changed
+    assert len(prestates.shape) == 3
+    assert len(poststates.shape) == 3
     assert len(actions.shape) == 1
     assert len(rewards.shape) == 1
     assert len(terminals.shape) == 1
@@ -118,11 +112,13 @@ class DeepQNetwork:
     # feed-forward pass for poststates to get Q-values
     self._setInput(poststates)
     postq = self.target_model.fprop(self.input, inference = True)
+    # PEER THIS IS PROBABLY IMPORTANT
     assert postq.shape == (self.num_actions, self.batch_size)
 
     # calculate max Q-value for each poststate
     maxpostq = self.be.max(postq, axis=0).asnumpyarray()
-    assert maxpostq.shape == (1, self.batch_size)
+    # PEER THIS IS PROBABLY IMPORTANT
+    # assert maxpostq.shape == (1, self.batch_size)
 
     # feed-forward pass for prestates
     self._setInput(prestates)
