@@ -26,15 +26,15 @@ class RlMarioPlayer(object):
         self.sim_speed = sim_speed
         args = parse_args("")
         args.batch_size = 1
-        self.the_memories = replay_memory.ReplayMemory(8000, args)
+        self.the_memories = replay_memory.ReplayMemory(60 * 60 * 20, args)
         gen_backend(backend="gpu", batch_size=1)
-        self.dqn = DeepQNetwork(255, args)
+        self.dqn = Deep3QNetwork(255, args)
         self.dqn.load_weights(weights_file)
         prim_soc = socket.create_connection(("localhost", 9090))
         self.emu = Emu2(prim_soc)
         self.rewarder = re.MultiReward(re.MarioDeath(), re.MarioScore(), re.MarioXAcceleration())
         self.exploration_rate = 0.1
-        self.train_for_x_minutes = 10
+        self.train_for_x_minutes = 20
         self.single_play_period = 60
 
     def run(self):
@@ -67,7 +67,7 @@ class RlMarioPlayer(object):
                     # move to next cycle
                     last_frame = current_frame
                 # do some experience replay
-                for j in range(10):
+                for j in range(int(self.single_play_period / 4)):
                     minibatch = self.the_memories.getMinibatch()
                     # train the network
                     self.dqn.train(minibatch, epoch)
@@ -84,7 +84,8 @@ class RlMarioPlayer(object):
 if __name__ == "__main__":
     # Nice weights files
     # "dqn_weights/1Layer/second_dqn_weights"
-    ai = RlMarioPlayer("dqn_weights/rl_training/beat11", "turbo")
+    # "dqn_weights/3Layer/d3_1_dqn_weights"
+    ai = RlMarioPlayer("dqn_weights/rl_training/d3q_3rd_youtubevideo", "turbo")
     try:
         ai.run()
     finally:
