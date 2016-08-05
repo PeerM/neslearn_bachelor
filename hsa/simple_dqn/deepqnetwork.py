@@ -17,7 +17,6 @@ class DeepQNetwork:
     self.num_actions = num_actions
     self.batch_size = args.batch_size
     self.discount_rate = args.discount_rate
-    self.history_length = args.history_length
     self.screen_dim = (args.screen_height, )
     self.clip_error = args.clip_error
     self.min_reward = args.min_reward
@@ -33,7 +32,7 @@ class DeepQNetwork:
                  stochastic_round = args.stochastic_round)
 
     # prepare tensors once and reuse them
-    self.input_shape = self.screen_dim + (self.history_length,) + (self.batch_size,)
+    self.input_shape = self.screen_dim + (self.batch_size,)
     self.input = self.be.empty(self.input_shape)
     self.input.lshape = self.input_shape # HACK: needed for convolutional networks
     self.targets = self.be.empty((self.num_actions, self.batch_size))
@@ -86,7 +85,7 @@ class DeepQNetwork:
   def _setInput(self, states):
     # change order of axes to match what Neon expects
     # PEER: I think this is for the for history size again
-    states = np.transpose(states, axes = (2,1,0))
+    states = states.T
     # copy() shouldn't be necessary here, but Neon doesn't work otherwise
     self.input.set(states.copy())
     # normalize network input between 0 and 1
@@ -96,8 +95,8 @@ class DeepQNetwork:
     # expand components of minibatch
     prestates, actions, rewards, poststates, terminals = minibatch
     # PEER: I think these 4s are for the two dimensional screen, which I changed
-    assert len(prestates.shape) == 3
-    assert len(poststates.shape) == 3
+    assert len(prestates.shape) == 2
+    assert len(poststates.shape) == 2
     assert len(actions.shape) == 1
     assert len(rewards.shape) == 1
     assert len(terminals.shape) == 1
@@ -169,7 +168,7 @@ class DeepQNetwork:
 
   def predict(self, states):
     # minibatch is full size, because Neon doesn't let change the minibatch size
-    assert states.shape == ((self.batch_size, self.history_length,) + self.screen_dim)
+    assert states.shape == (self.batch_size,) + self.screen_dim
 
     # calculate Q-values for the states
     self._setInput(states)

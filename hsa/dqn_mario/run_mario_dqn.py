@@ -26,9 +26,16 @@ for i in range(rewards.shape[0]):
 
 dqn = DeepQNetwork(255, args)
 
-dqn.train(replay_memory.getMinibatch(), 0)
+for i in range(3000):
+    dqn.train(replay_memory.getMinibatch(), 0)
+    print("period {} over".format(i))
 
-prediction = dqn.predict(np.array([[x] for x in rams.values[2548:2548 + 8]]))
+dqn.save_weights("first_dqn_weights")
+
+prediction = dqn.predict(np.array(rams.values[1337:1337 + 8]))
+# prediction = dqn.predict(np.array([[x] for x in rams.values[1337:1337 + 8]]))
 print(prediction)
 for batch in prediction:
-     print(dqn_to_py(batch.argmax()))
+    dqn_input = batch.argmax()
+    print(dqn_input)
+    print(dqn_to_py(dqn_input))
