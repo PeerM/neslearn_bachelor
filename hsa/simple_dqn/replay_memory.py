@@ -50,15 +50,7 @@ class ReplayMemory:
         indexes = []
         while len(indexes) < self.batch_size:
             # find random index
-            while True:
-                # sample one index (ignore states wraping over
-                index = random.randint(0, self.count - 1)
-                # if wraps over current pointer, then get new one
-                if index >= self.current:
-                    continue
-                # otherwise use this index
-                break
-
+            index = random.randint(0, self.count - 1)
             # NB! having index first is fastest in C-order matrices
             self.prestates[len(indexes), ...] = self.getState(index - 1)
             self.poststates[len(indexes), ...] = self.getState(index)
