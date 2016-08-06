@@ -44,35 +44,34 @@ class RlMarioPlayer(object):
             self.emu.speed_mode(self.sim_speed)
         self.emu.step()
         last_frame = self.emu.get_ram()
-        try:
-            for i in range(int(60 / self.single_play_period * 60 * self.train_for_x_minutes)):
-                # Play for a "Play"
-                for j in range(self.single_play_period):
-                    dqn_input_scores = self.dqn.predict(process_raw_frame(last_frame))
-                    if random.random() > self.exploration_rate:
-                        chosen_dqn_input = dqn_input_scores.argmax()
-                    else:
-                        chosen_dqn_input = random.randrange(0, 255)
-                    py_input = dqn_to_py(chosen_dqn_input)
-                    reward = self.rewarder.reward(last_frame)
-                    current_frame = self.emu.full_step(py_input)
-                    terminal = self.is_game_over(last_frame)
-                    self.the_memories.add(chosen_dqn_input, reward, np.frombuffer(current_frame, dtype=np.uint8),
-                                          terminal)
-                    # End of episode reload savestate (maybe reset emulator later)
-                    if terminal:
-                        self.emu.load_slot(10)
-                        epoch += 1
 
-                    # move to next cycle
-                    last_frame = current_frame
-                # do some experience replay
-                for j in range(int(self.single_play_period / 4)):
-                    minibatch = self.the_memories.getMinibatch()
-                    # train the network
-                    self.dqn.train(minibatch, epoch)
-        except NotADirectoryError:
-            pass
+        for i in range(int(60 / self.single_play_period * 60 * self.train_for_x_minutes)):
+            # Play for a "Play"
+            for j in range(self.single_play_period):
+                dqn_input_scores = self.dqn.predict(process_raw_frame(last_frame))
+                if random.random() > self.exploration_rate:
+                    chosen_dqn_input = dqn_input_scores.argmax()
+                else:
+                    chosen_dqn_input = random.randrange(0, 255)
+                py_input = dqn_to_py(chosen_dqn_input)
+                reward = self.rewarder.reward(last_frame)
+                current_frame = self.emu.full_step(py_input)
+                terminal = self.is_game_over(last_frame)
+                self.the_memories.add(chosen_dqn_input, reward, np.frombuffer(current_frame, dtype=np.uint8),
+                                      terminal)
+                # End of episode reload savestate (maybe reset emulator later)
+                if terminal:
+                    self.emu.load_slot(10)
+                    epoch += 1
+
+                # move to next cycle
+                last_frame = current_frame
+            # do some experience replay
+            for j in range(int(self.single_play_period / 4)):
+                minibatch = self.the_memories.getMinibatch()
+                # train the network
+                self.dqn.train(minibatch, epoch)
+
         # except KeyboardInterrupt:
         #     self.emu.close()
         return

@@ -3,3 +3,7 @@ matplotlib
 neon
 h5py
 configargparse
+future
+numpy
+pyyaml
+appdirs
