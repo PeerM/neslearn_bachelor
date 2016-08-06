@@ -32,7 +32,8 @@ class RlMarioPlayer(object):
         self.dqn.load_weights(weights_file)
         prim_soc = socket.create_connection(("localhost", 9090))
         self.emu = Emu2(prim_soc)
-        self.rewarder = re.MultiReward(re.MarioDeath(), re.MarioScore(), re.MarioXAcceleration())
+        # TimeIsImportant maybe useful, maybe not
+        self.rewarder = re.MultiReward(re.MarioDeath(), re.MarioScore(), re.MarioXAcceleration(), re.TimeIsImportant())
         self.exploration_rate = 0.1
         self.train_for_x_minutes = 30
         self.single_play_period = 60
@@ -45,6 +46,7 @@ class RlMarioPlayer(object):
             self.emu.speed_mode(self.sim_speed)
         self.emu.step()
         last_frame = self.emu.get_ram()
+        # TODO put code to reload example memory here
 
         for i in range(int(60 / self.single_play_period * 60 * self.train_for_x_minutes)):
             # Play for a "Play"
@@ -53,7 +55,8 @@ class RlMarioPlayer(object):
                 if random.random() > self.exploration_rate:
                     chosen_dqn_input = dqn_input_scores.argmax()
                 else:
-                    chosen_dqn_input = random.randrange(0, nr_actions-1)# should be number actions but pausing is anoyng
+                    # should be number actions but pausing is annoying
+                    chosen_dqn_input = random.randrange(0, nr_actions - 1)
                 py_input = rdqn_to_py(chosen_dqn_input)
                 reward = self.rewarder.reward(last_frame)
                 for _ in range(self.input_frequency):

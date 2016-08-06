@@ -57,6 +57,12 @@ class MarioDeath(object):
             else:
                 return 0
 
+class TimeIsImportant(object):
+    def __init__(self):
+        self.dying = False
+
+    def reward(self, ram: bytes):
+        return -0.004
 
 class MultiReward(object):
     def __init__(self, *rewarders):
