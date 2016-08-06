@@ -25,7 +25,7 @@ def parse_args(args=None):
     netarg.add_argument("--target_steps", type=int, default=10000, help="Copy main network to target network after this many steps.")
     netarg.add_argument("--min_reward", type=float, default=-30, help="Minimum reward.")
     netarg.add_argument("--max_reward", type=float, default=10, help="Maximum reward.")
-    netarg.add_argument("--batch_norm", type=str2bool, default=False, help="Use batch normalization in all layers.")
+    netarg.add_argument("--batch_norm", type=str2bool, default=True, help="Use batch normalization in all layers.")
 
     #netarg.add_argument("--rescale_r", type=str2bool, help="Rescale rewards.")
     #missing: bufferSize=512,valid_size=500,min_reward=-1,max_reward=1
