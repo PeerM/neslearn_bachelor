@@ -23,8 +23,8 @@ def parse_args(args=None):
     netarg.add_argument("--decay_rate", type=float, default=0.95, help="Decay rate for RMSProp and Adadelta algorithms.")
     netarg.add_argument("--clip_error", type=float, default=1, help="Clip error term in update between this number and its negative.")
     netarg.add_argument("--target_steps", type=int, default=10000, help="Copy main network to target network after this many steps.")
-    netarg.add_argument("--min_reward", type=float, default=-30, help="Minimum reward.")
-    netarg.add_argument("--max_reward", type=float, default=10, help="Maximum reward.")
+    netarg.add_argument("--min_reward", type=float, default=-2, help="Minimum reward.")
+    netarg.add_argument("--max_reward", type=float, default=2, help="Maximum reward.")
     netarg.add_argument("--batch_norm", type=str2bool, default=True, help="Use batch normalization in all layers.")
 
     #netarg.add_argument("--rescale_r", type=str2bool, help="Rescale rewards.")

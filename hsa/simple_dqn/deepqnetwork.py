@@ -4,7 +4,7 @@ from neon.optimizers import RMSProp, Adam, Adadelta
 from neon.layers import Affine, GeneralizedCost
 from neon.transforms import Rectlin
 from neon.models import Model
-from neon.transforms import SumSquared
+from neon.transforms import SumSquared, CrossEntropyMulti
 from neon.util.persist import save_obj
 import numpy as np
 import os
@@ -40,7 +40,7 @@ class DeepQNetwork:
     # create model
     layers = self._createLayers(num_actions)
     self.model = Model(layers = layers)
-    self.cost = GeneralizedCost(costfunc = SumSquared())
+    self.cost = GeneralizedCost(costfunc = CrossEntropyMulti())
     # Bug fix
     for l in self.model.layers.layers:
       l.parallelism = 'Disabled'

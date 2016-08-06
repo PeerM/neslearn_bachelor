@@ -71,3 +71,11 @@ def py_to_rdqn(py_input: dict):
 
 for i in range(37):
     assert py_to_rdqn(rdqn_to_py(i)) == i
+
+
+def numpy_to_py(numpy_input):
+    return dict(zip(input_transform_keys, numpy_input))
+
+
+def numpy_to_rdqn(row):
+    return py_to_rdqn(numpy_to_py(row))
