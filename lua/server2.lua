@@ -48,6 +48,17 @@ function play_movie_complete()
     end
 end
 
+function load_slot(slot)
+    local save = savestate.object(slot)
+    savestate.load(save)
+end
+
+function full_step(inputs)
+    joypad.write(1, inputs)
+    emu.frameadvance()
+    get_ram()
+end
+
 -- make sure we don't block waiting for this client's line
 client:settimeout(10000)
 -- loop forever waiting for clients

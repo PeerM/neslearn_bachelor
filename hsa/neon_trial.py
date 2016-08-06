@@ -47,7 +47,7 @@ from neon.callbacks.callbacks import Callbacks
 
 callbacks = Callbacks(mlp, eval_set=test_set, **args.callback_args)
 
-mlp.fit(train_set, optimizer=optimizer, num_epochs=args.epochs, cost=cost,
+mlp.fit(train_set, optimizer=optimizer, num_epochs=1, cost=cost,
         callbacks=callbacks)
 
 results = mlp.get_outputs(test_set)

@@ -1,4 +1,9 @@
 import socket
+import re
+
+
+def _input_py_to_lua(input_dict):
+    return "{" + ", ".join([key + "=" + str(value).lower() for (key, value) in input_dict.items()]) + "}"
 
 
 class Emu2:
@@ -58,3 +63,47 @@ class Emu2:
 
     def message(self, message):
         self._send_command('emu.message("{}")'.format(message))
+
+    def input_read(self):
+        self._send_command("send_feedback(joypad.read(1))")
+        received = self._recv_feedback()
+        return {pair[0]: pair[1] == "true" for pair in re.findall(r"(\w*)=(true|false)", received)}
+
+    def input_write(self, input_dict):
+        lua_side = _input_py_to_lua(input_dict)
+        self._send_command("joypad.write(1,{}); pos_feedback()".format(lua_side))
+        return self._recv_feedback()
+
+    def load_slot(self, slot):
+        self._send_command("load_slot({}); pos_feedback()".format(slot))
+        return self._recv_feedback()
+
+    def play_movie_with_output(self):
+        # sanity hack, to make should nothing is left in the buffer
+        # prim_soc.recv(2**10)
+        self.play_beginning()
+        self.speed_mode("turbo")
+        ram_frame_list = list()
+        inputs_list = list()
+        last_state = True
+        while last_state:
+            last_state = self.play_movie()
+            ram_frame_list.append(self.get_ram())
+            inputs_list.append(self.input_read())
+        return (ram_frame_list, inputs_list)
+
+    def full_step(self, py_input):
+        self._send_command("full_step({})".format(_input_py_to_lua(py_input)))
+        return self.soc.recv(2048)
+
+    def unpause(self):
+        self._send_command("emu.unpause()")
+
+    def pause(self):
+        self._send_command("emu.pause()")
+
+    def softreset(self):
+        self._send_command("emu.softreset()")
+
+    def poweron(self):
+        self._send_command("emu.poweron()")
