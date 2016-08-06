@@ -53,7 +53,7 @@ class MarioDeath(object):
         else:
             if ram[0x000E] == 0x0B:
                 self.dying = True
-                return -1
+                return -0.4
             else:
                 return 0
 
