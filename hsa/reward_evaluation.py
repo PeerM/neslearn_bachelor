@@ -3,11 +3,15 @@ from hsa import emu_connect
 import math
 
 
-def _unsigned_to_singed(byte):
+def unsigned_to_singed(byte):
     if byte > 127:
         return (256 - byte) * (-1)
     else:
         return byte
+
+def mario_x_speed(ram:bytes):
+    raw = unsigned_to_singed(ram[0x0057])
+    return math.floor(raw / 5)
 
 
 class MarioXAcceleration(object):
@@ -15,7 +19,7 @@ class MarioXAcceleration(object):
         self.last = 0
 
     def reward(self, ram: bytes):
-        raw = _unsigned_to_singed(ram[0x0057])
+        raw = unsigned_to_singed(ram[0x0057])
         current = math.floor(raw / 5)
         delta = current - self.last
         self.last = current
