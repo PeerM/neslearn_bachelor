@@ -95,7 +95,8 @@ class Agent:
 			if game.is_won():
 				win_count += 1
 			if epsilon > final_epsilon:
-				epsilon -= delta
+				new_epsilon = epsilon - delta
+				epsilon = max(new_epsilon,final_epsilon)
 			print("Epoch {:03d}/{:03d} | Loss {:.4f} | Epsilon {:.2f} | Win count {}".format(epoch + 1, nb_epoch, loss, epsilon, win_count))
 
 	def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
@@ -115,7 +116,7 @@ class Agent:
 					print("random")
 					action = int(np.random.randint(0, game.nb_actions))
 				else:
-					q = model.predict(S)			
+					q = model.predict(S)
 					action = int(np.argmax(q[0]))
 				game.play(action)
 				S = self.get_game_data(game)
@@ -131,4 +132,4 @@ class Agent:
 			for i in range(len(frames)):
 				plt.imshow(frames[i], interpolation='none')
 				plt.savefig("images/" + game.name + str(i) + ".png")
- 
+

@@ -1,4 +1,5 @@
 import socket
+import uuid
 
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Input
@@ -28,5 +29,10 @@ emu.load_slot(10)
 
 game = MarioEmuGame(emu, nr_actions)
 agent = Agent(model, memory_size=100000, nb_frames=nb_frames)
-agent.train(game)
-agent.play(game)
+try:
+    agent.train(game, nb_epoch=30)
+    # agent.play(game, nb_epoch=2)
+finally:
+    print("stopping")
+    model.save_weights(str(uuid.uuid1()) + ".hdf5")
+    emu.close()

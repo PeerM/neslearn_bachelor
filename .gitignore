@@ -163,3 +163,4 @@ ENV/
 
 data/
 /bin_deps/fceux/fceux.cfg
+/kdata/
