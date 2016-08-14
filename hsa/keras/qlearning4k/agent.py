@@ -88,6 +88,7 @@ class Agent:
 				transition = [S, a, r, S_prime, game_over]
 				self.memory.remember(*transition)
 				S = S_prime
+                # TODO make this run in parallel
 				batch = self.memory.get_batch(model=model, batch_size=batch_size, gamma=gamma)
 				if batch:
 					inputs, targets = batch

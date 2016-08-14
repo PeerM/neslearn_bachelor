@@ -20,10 +20,13 @@ class MarioEmuGame(Game):
         return self.last_frame_ram
 
     def play(self, action):
-        self.last_frame_ram = process_raw_frame(self.emu.full_step(rdqn_to_py(action)))
+        step = self.emu.full_step(rdqn_to_py(action))
+        if len(step) != 2048:
+            raise AssertionError()
+        self.last_frame_ram = process_raw_frame(step)
 
     def reset(self):
-        self.emu.load_slot(10)
+        self.emu.load_slot_async(10)
 
     def is_over(self):
         isover = self.last_frame_ram[0x075A] <= 1

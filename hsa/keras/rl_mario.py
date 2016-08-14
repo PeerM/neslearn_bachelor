@@ -16,8 +16,9 @@ nr_actions = 36
 model = Sequential()
 model.add(Flatten(input_shape=(nb_frames, ram_size)))
 # model.add(Input((ram_size,)))
-model.add(Dense(2, activation='relu'))
+# model.add(Dense(1024, activation='relu'))
 model.add(Dense(512, activation='relu'))
+model.add(Dense(256, activation='relu'))
 model.add(Dense(nr_actions))
 model.compile(sgd(lr=.2), "mse")
 
@@ -28,9 +29,9 @@ emu.speed_mode("turbo")
 emu.load_slot(10)
 
 game = MarioEmuGame(emu, nr_actions)
-agent = Agent(model, memory_size=100000, nb_frames=nb_frames)
+agent = Agent(model, nb_frames=nb_frames)
 try:
-    agent.train(game, nb_epoch=30)
+    agent.train(game, nb_epoch=10)
     # agent.play(game, nb_epoch=2)
 finally:
     print("stopping")

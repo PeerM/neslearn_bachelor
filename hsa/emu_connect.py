@@ -78,6 +78,10 @@ class Emu2:
         self._send_command("load_slot({}); pos_feedback()".format(slot))
         return self._recv_feedback()
 
+    def load_slot_async(self, slot):
+        self._send_command("load_slot({})".format(slot))
+        return True
+
     def play_movie_with_output(self):
         # sanity hack, to make should nothing is left in the buffer
         # prim_soc.recv(2**10)
