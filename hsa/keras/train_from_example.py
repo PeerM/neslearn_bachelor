@@ -21,7 +21,7 @@ nr_actions = 36
 # This does not work in this file right now
 nb_frames = 1
 ram_size = 2048
-nr_trainings = 3000
+nr_trainings = 200
 batch_size = 64
 
 memory = ExperienceReplay(nr_frames, fast=False)
@@ -29,13 +29,10 @@ memory = ExperienceReplay(nr_frames, fast=False)
 # Model
 model = Sequential()
 model.add(Flatten(input_shape=(nb_frames, ram_size)))
-# model.add(Input((ram_size,)))
-# model.add(Dense(1024, activation='relu'))
-model.add(Dense(256, init="glorot_uniform", activation='relu', W_regularizer=l1(0.001)))
-# model.add(Dense(512, activation='relu'))
-# model.add(Dense(512, activation='relu', W_regularizer=l1()))
-# model.add(Dense(64, activation='relu', W_regularizer=l1()))
+model.add(Dense(2**9+2**8, init="glorot_uniform", activation='relu', W_regularizer=l1(0.001)))
+model.add(Dense(512, init="glorot_uniform", activation='relu'))
 # model.add(BatchNormalization())
+model.add(Dense(256, init="glorot_uniform", activation='relu'))
 model.add(Dense(nr_actions))
 # 7 seems ok 512
 # 6 127

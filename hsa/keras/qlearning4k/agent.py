@@ -57,7 +57,7 @@ class Agent:
         self.frames = None
 
     def train(self, game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon=[1., .1], epsilon_rate=0.5,
-              reset_memory=False):
+              reset_memory=False, play_period=1):
         self.check_game_compatibility(game)
         if type(epsilon) in {tuple, list}:
             delta = ((epsilon[0] - epsilon[1]) / (nb_epoch * epsilon_rate))
@@ -77,18 +77,19 @@ class Agent:
             game_over = False
             S = self.get_game_data(game)
             while not game_over:
-                if np.random.random() < epsilon:
-                    a = int(np.random.randint(game.nb_actions))
-                else:
-                    q = model.predict(S)
-                    a = int(np.argmax(q[0]))
-                game.play(a)
-                r = game.get_score()
-                S_prime = self.get_game_data(game)
-                game_over = game.is_over()
-                transition = [S, a, r, S_prime, game_over]
-                self.memory.remember(*transition)
-                S = S_prime
+                for _ in range(play_period):
+                    if np.random.random() < epsilon:
+                        a = int(np.random.randint(game.nb_actions))
+                    else:
+                        q = model.predict(S)
+                        a = int(np.argmax(q[0]))
+                    game.play(a)
+                    r = game.get_score()
+                    S_prime = self.get_game_data(game)
+                    game_over = game.is_over()
+                    transition = [S, a, r, S_prime, game_over]
+                    self.memory.remember(*transition)
+                    S = S_prime
                 # TODO make this run in parallel
                 batch = self.memory.get_batch(model=model, batch_size=batch_size, gamma=gamma)
                 if batch:
