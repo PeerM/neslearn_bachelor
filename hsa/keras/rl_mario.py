@@ -15,11 +15,11 @@ ram_size = 2048
 nr_actions = 36
 play_period = 30
 batch_size = play_period * 32
-nr_epoch=10
+nr_epoch=15
 
-model_filename = None
+# model_filename = None
 # model_filename = "./1_15_1"
-# model_filename = "../dqn_weights/keras/P2_3Layer"
+model_filename = "../dqn_weights/keras/P3_1Layer"
 
 # Model
 model = Sequential()
@@ -30,7 +30,7 @@ model.compile(sgd(lr=10 ** -6, momentum=0.9), "mse")
 
 if model_filename:
     model.load_weights(model_filename + ".hdf5")
-    epsilon = (0.4, 0.1)
+    epsilon = (0.5, 0.05)
 else:
     epsilon = (1.0, 0.1)
 prim_soc = socket.create_connection(("localhost", 9090))

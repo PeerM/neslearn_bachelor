@@ -26,17 +26,12 @@ batch_size = 64
 
 memory = ExperienceReplay(nr_frames, fast=False)
 
-# Model
 model = Sequential()
 model.add(Flatten(input_shape=(nb_frames, ram_size)))
-model.add(Dense(2**9+2**8, init="glorot_uniform", activation='relu', W_regularizer=l1(0.001)))
 model.add(Dense(512, init="glorot_uniform", activation='relu'))
-# model.add(BatchNormalization())
-model.add(Dense(256, init="glorot_uniform", activation='relu'))
 model.add(Dense(nr_actions))
-# 7 seems ok 512
-# 6 127
 model.compile(sgd(lr=10 ** -6, momentum=0.9), "mse")
+
 
 for i, s_prime in enumerate(rams.values[1:]):
     s_bloated = np.expand_dims(np.expand_dims(rams.values[i - 1], 0), 0)

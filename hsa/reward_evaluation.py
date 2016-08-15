@@ -11,7 +11,7 @@ def unsigned_to_singed(byte):
 
 def mario_x_speed(ram:bytes):
     raw = unsigned_to_singed(ram[0x0057])
-    return math.floor(raw / 5)
+    return math.floor(raw / 10)
 
 
 class MarioXAcceleration(object):

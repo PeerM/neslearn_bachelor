@@ -76,6 +76,8 @@ class Agent:
                 self.reset_memory()
             game_over = False
             S = self.get_game_data(game)
+            r_avg_alpha = 0.9
+            avg_r = 0
             while not game_over:
                 for _ in range(play_period):
                     if np.random.random() < epsilon:
@@ -85,6 +87,8 @@ class Agent:
                         a = int(np.argmax(q[0]))
                     game.play(a)
                     r = game.get_score()
+                    # avg_r = (r_avg_alpha * r) + (1.0 - r_avg_alpha) * avg_r
+                    avg_r += r
                     S_prime = self.get_game_data(game)
                     game_over = game.is_over()
                     transition = [S, a, r, S_prime, game_over]
@@ -101,8 +105,8 @@ class Agent:
             if epsilon > final_epsilon:
                 new_epsilon = epsilon - delta
                 epsilon = max(new_epsilon, final_epsilon)
-            print("Epoch {:03d}/{:03d} | Loss {:.4f} | Epsilon {:.2f} | Win count {}".format(epoch + 1, nb_epoch, loss,
-                                                                                             epsilon, win_count))
+            print("Epoch {:03d}/{:03d} | Loss {:.4f} | Reward {:.1f} | Epsilon {:.2f} | Win count {}"
+                  .format(epoch + 1, nb_epoch, loss, avg_r, epsilon, win_count))
 
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
         self.check_game_compatibility(game)
