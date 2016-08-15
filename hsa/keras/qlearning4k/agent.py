@@ -92,7 +92,8 @@ class Agent:
 				batch = self.memory.get_batch(model=model, batch_size=batch_size, gamma=gamma)
 				if batch:
 					inputs, targets = batch
-					loss += float(model.train_on_batch(inputs, targets))
+					batch_loss = float(model.train_on_batch(inputs, targets))
+					loss += batch_loss
 			if game.is_won():
 				win_count += 1
 			if epsilon > final_epsilon:
