@@ -100,6 +100,10 @@ class Emu2:
         self._send_command("full_step({})".format(_input_py_to_lua(py_input)))
         return self._receive_extra_check()
 
+    def step_repeat_actions(self, py_input, repeat_actions):
+        self._send_command("step_repeat_actions({},{})".format(_input_py_to_lua(py_input), repeat_actions))
+        return self._receive_extra_check()
+
     def unpause(self):
         self._send_command("emu.unpause()")
 
@@ -112,8 +116,8 @@ class Emu2:
     def poweron(self):
         self._send_command("emu.poweron()")
 
-    """This is kind of a hack because recv has returned less than 2048 in the past"""
     def _receive_extra_check(self):
+        """This is kind of a hack because recv has returned less than 2048 in the past"""
         accumulator = bytes()
         while len(accumulator) < 2048:
             accumulator += self.soc.recv(2048 - len(accumulator))

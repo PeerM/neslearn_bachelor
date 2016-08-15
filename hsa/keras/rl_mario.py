@@ -13,9 +13,9 @@ from hsa.keras.qlearning4k import Agent
 nb_frames = 1
 ram_size = 2048
 nr_actions = 36
-play_period = 30
+play_period = 20
 batch_size = play_period * 32
-nr_epoch=15
+nr_epoch = 15
 
 # model_filename = None
 # model_filename = "./1_15_1"
@@ -42,7 +42,8 @@ emu.load_slot(10)
 game = MarioEmuGame(emu, nr_actions)
 agent = Agent(model, nb_frames=nb_frames)
 try:
-    agent.train(game, nb_epoch=nr_epoch, epsilon=epsilon, play_period=play_period, batch_size=batch_size)
+    agent.train(game, nb_epoch=nr_epoch, epsilon=epsilon, play_period=play_period, batch_size=batch_size,
+                action_repeat=4)
     # agent.play(game, nb_epoch=4)
 finally:
     print("stopping")

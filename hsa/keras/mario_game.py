@@ -19,8 +19,8 @@ class MarioEmuGame(Game):
     def get_state(self):
         return self.last_frame_ram
 
-    def play(self, action):
-        step = self.emu.full_step(rdqn_to_py(action))
+    def play(self, action, repeat_actions=1):
+        step = self.emu.step_repeat_actions(rdqn_to_py(action), repeat_actions)
         if len(step) != 2048:
             raise AssertionError()
         self.last_frame_ram = process_raw_frame(step)

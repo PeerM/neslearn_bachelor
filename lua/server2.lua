@@ -59,6 +59,14 @@ function full_step(inputs)
     get_ram()
 end
 
+function step_repeat_actions(inputs,repeat_actions)
+    for variable = 0, repeat_actions, 1 do
+        joypad.write(1, inputs)
+        emu.frameadvance()
+    end
+    get_ram()
+end
+
 -- make sure we don't block waiting for this client's line
 client:settimeout(10000)
 -- loop forever waiting for clients

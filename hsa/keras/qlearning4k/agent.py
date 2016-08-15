@@ -57,7 +57,7 @@ class Agent:
         self.frames = None
 
     def train(self, game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon=[1., .1], epsilon_rate=0.5,
-              reset_memory=False, play_period=1):
+              reset_memory=False, play_period=1, action_repeat=1):
         self.check_game_compatibility(game)
         if type(epsilon) in {tuple, list}:
             delta = ((epsilon[0] - epsilon[1]) / (nb_epoch * epsilon_rate))
@@ -79,13 +79,13 @@ class Agent:
             r_avg_alpha = 0.9
             avg_r = 0
             while not game_over:
-                for _ in range(play_period):
+                for _1 in range(play_period):
                     if np.random.random() < epsilon:
                         a = int(np.random.randint(game.nb_actions))
                     else:
                         q = model.predict(S)
                         a = int(np.argmax(q[0]))
-                    game.play(a)
+                    game.play(a,action_repeat)
                     r = game.get_score()
                     # avg_r = (r_avg_alpha * r) + (1.0 - r_avg_alpha) * avg_r
                     avg_r += r
