@@ -1,5 +1,5 @@
-import socket
 import re
+import socket
 
 
 def _input_py_to_lua(input_dict):
@@ -94,11 +94,11 @@ class Emu2:
             last_state = self.play_movie()
             ram_frame_list.append(self.get_ram())
             inputs_list.append(self.input_read())
-        return (ram_frame_list, inputs_list)
+        return ram_frame_list, inputs_list
 
     def full_step(self, py_input):
         self._send_command("full_step({})".format(_input_py_to_lua(py_input)))
-        return self.soc.recv(2048)
+        return self._receive_extra_check()
 
     def unpause(self):
         self._send_command("emu.unpause()")
@@ -111,3 +111,10 @@ class Emu2:
 
     def poweron(self):
         self._send_command("emu.poweron()")
+
+    """This is kind of a hack because recv has returned less than 2048 in the past"""
+    def _receive_extra_check(self):
+        accumulator = bytes()
+        while len(accumulator) < 2048:
+            accumulator += self.soc.recv(2048 - len(accumulator))
+        return accumulator
