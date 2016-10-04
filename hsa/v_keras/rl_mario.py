@@ -54,4 +54,4 @@ try:
 finally:
     print("stopping")
     model.save_weights(str(uuid.uuid1()) + ".hdf5")
-    emu.close()
+    emu.close_immediately()
