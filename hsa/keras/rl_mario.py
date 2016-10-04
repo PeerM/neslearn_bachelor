@@ -18,9 +18,10 @@ play_period = 20
 batch_size = play_period * 32
 nr_epoch = 30
 
-# model_filename = None
-model_filename = "./M1"
+model_filename = None
+# model_filename = "./M1"
 # model_filename = "../dqn_weights/keras/P3_1Layer"
+memories_filename = "../mario_1_1_third.hdf"
 
 # Model
 model = Sequential()
@@ -35,8 +36,8 @@ if model_filename:
     model.load_weights(model_filename + ".hdf5")
     epsilon = (0.5, 0.05)
 else:
-    epsilon = (1.0, 0.1)
-    load_memories(memory)
+    epsilon = (0.8, 0.1)
+    load_memories(memory,memories_filename)
 
 prim_soc = socket.create_connection(("localhost", 9090))
 prim_soc.setblocking(True)
