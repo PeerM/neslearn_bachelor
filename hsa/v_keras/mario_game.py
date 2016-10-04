@@ -1,5 +1,5 @@
 import numpy as np
-from hsa.keras.qlearning4k.games.game import Game
+from hsa.v_keras.qlearning4k.games.game import Game
 from hsa import emu_connect
 from hsa.dqn_mario.dqn_input import numpy_to_rdqn, rdqn_to_py
 from hsa.reward_evaluation import mario_x_speed

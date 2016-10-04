@@ -5,11 +5,11 @@ from keras.models import Sequential, model_from_json
 from keras.layers import Dense, Flatten, Input, BatchNormalization
 from keras.optimizers import sgd
 from keras.regularizers import l1
-from hsa.keras.qlearning4k import ExperienceReplay
+from hsa.v_keras.qlearning4k import ExperienceReplay
 from hsa import emu_connect
-from hsa.keras.mario_game import MarioEmuGame
-from hsa.keras.memories import load_memories
-from hsa.keras.qlearning4k import Agent
+from hsa.v_keras.mario_game import MarioEmuGame
+from hsa.v_keras.memories import load_memories
+from hsa.v_keras.qlearning4k import Agent
 
 nb_frames = 1
 ram_size = 2048

@@ -2,14 +2,14 @@ import uuid
 
 import pandas
 import numpy as np
-from keras.layers import Flatten, Dense, BatchNormalization
-from keras.models import Sequential
-from keras.optimizers import sgd
-from keras.regularizers import l1
+from v_keras.layers import Flatten, Dense, BatchNormalization
+from v_keras.models import Sequential
+from v_keras.optimizers import sgd
+from v_keras.regularizers import l1
 import matplotlib.pyplot as plt
 
-from hsa.keras.memories import load_memories
-from hsa.keras.qlearning4k import ExperienceReplay
+from hsa.v_keras.memories import load_memories
+from hsa.v_keras.qlearning4k import ExperienceReplay
 
 nr_actions = 36
 # This does not work in this file right now
