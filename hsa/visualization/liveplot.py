@@ -28,5 +28,5 @@ class LivePlotter(object):
         ani = animation.FuncAnimation(self.fig, self.animate, interval=self.interval)
         plt.show()
 
-
-LivePlotter(100, 7).start()
+if __name__ == "__main__":
+    LivePlotter(100, 7).start()
