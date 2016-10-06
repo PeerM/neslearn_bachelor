@@ -1,4 +1,4 @@
-from v_keras.qlearning4k.games.game import Game
+from hsa.v_keras.qlearning4k.games.game import Game
 from .memory import ExperienceReplay
 import numpy as np
 import matplotlib.pyplot as plt

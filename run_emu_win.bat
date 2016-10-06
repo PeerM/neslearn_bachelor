@@ -1,0 +1,1 @@
+D:\projekts\PycharmProjects\neslearn\bin_deps\fceux\fceux.exe -lua D:\projekts\PycharmProjects\neslearn\lua\server2.lua "D:\projekts\nes-ki\Super Mario Bros. (Japan, USA).nes"
