@@ -40,7 +40,7 @@ if model_filename:
     epsilon = (0.5, 0.05)
 else:
     epsilon = (0.8, 0.1)
-    load_memories(memory,memories_filename)
+    load_memories(memory, memories_filename)
 
 prim_soc = socket.create_connection(("localhost", 9090))
 prim_soc.setblocking(True)
@@ -56,5 +56,5 @@ try:
     # agent.play(game, nb_epoch=4)
 finally:
     print("stopping")
-    model.save_weights(str(uuid.uuid1()) + ".hdf5")
+    model.save_weights("../dqn_weights/keras/tmp/" + str(uuid.uuid1()) + ".hdf5")
     emu.close_immediately()

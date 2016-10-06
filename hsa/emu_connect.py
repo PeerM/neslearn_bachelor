@@ -31,6 +31,9 @@ class Emu2:
         self._send_command("close")
         return self._recv_feedback()
 
+    def close_immediately(self):
+        self._send_command("close")
+
     def get_ram(self):
         self._send_command("get_ram()")
         return self.soc.recv(2048)
