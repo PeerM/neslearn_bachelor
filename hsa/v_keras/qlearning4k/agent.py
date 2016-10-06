@@ -1,11 +1,12 @@
+from v_keras.qlearning4k.games.game import Game
 from .memory import ExperienceReplay
 import numpy as np
 import matplotlib.pyplot as plt
 import os
 
 
-def training_step(batch_size, gamma, memory, model):
-    batch = memory.get_batch(model=model, batch_size=batch_size, gamma=gamma)
+def training_step(batch_size, learning_rate_gamma, memory, model):
+    batch = memory.get_batch(model=model, batch_size=batch_size, gamma=learning_rate_gamma)
     # at the start of the training we might not have enough memories build up
     if batch:
         inputs, targets = batch
@@ -43,7 +44,7 @@ class Agent:
         self.memory.reset_memory()
 
     def check_game_compatibility(self, game):
-        game_output_shape = (1, None) + game.get_frame().shape
+        game_output_shape = (1, None) + game.get_current_state().shape
         if len(game_output_shape) != len(self.model.input_shape):
             raise Exception('Dimension mismatch. Input shape of the model should be compatible with the game.')
         else:
@@ -54,8 +55,7 @@ class Agent:
         if len(self.model.output_shape) != 2 or self.model.output_shape[1] != game.nb_actions:
             raise Exception('Output shape of model should be (nb_samples, nb_actions).')
 
-    def get_game_data(self, game):
-        frame = game.get_frame()
+    def get_game_data(self, frame):
         if self.frames is None:
             self.frames = [frame] * self.nb_frames
         else:
@@ -66,7 +66,7 @@ class Agent:
     def clear_frames(self):
         self.frames = None
 
-    def train(self, game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon=(1., .1), epsilon_rate=0.5, play_period=1, action_repeat=1):
+    def train(self, game: Game, nb_epoch=1000, batch_size=50, learning_rate_gamma=0.9, epsilon=(1., .1), epsilon_rate=0.5, play_period=1, action_repeat=1):
         # TODO IDEA move game into constructor or maybe not
         self.check_game_compatibility(game)
         # epsilon: can be single value or tuple for slope
@@ -79,6 +79,7 @@ class Agent:
         else:
             final_epsilon = epsilon
         model = self.model
+        # todo Unify this whole nb_actions thing
         nb_actions = model.output_shape[-1]
         win_count = 0
         for epoch in range(nb_epoch):
@@ -86,7 +87,7 @@ class Agent:
             game.reset()
             self.clear_frames()
             game_over = False
-            S = self.get_game_data(game)
+            S = self.get_game_data(game.get_current_state())
             cumulative_r = 0
             while not game_over:
                 for _1 in range(play_period):
@@ -95,29 +96,30 @@ class Agent:
                     # cumulative_r: performance metric to optimize
                     # q: the model returns the quality of each action as a number and we want the one it finds most prominent
                     if np.random.random() < epsilon:
-                        a = int(np.random.randint(game.nb_actions))
+                        chosen_a = int(np.random.randint(game.nb_actions))
                     else:
                         q = model.predict(S)
-                        a = int(np.argmax(q[0]))
+                        chosen_a = int(np.argmax(q[0]))
                     # TODO IDEA return a play result instead of mutating the game so much
-                    game.play(a,action_repeat)
-                    r = game.get_score()
+                    play_result = game.play(chosen_a, action_repeat)
+                    # actual_a is needed for of policy learning
+                    actual_a = play_result.action
+                    r = play_result.score
                     cumulative_r += r
-                    S_prime = self.get_game_data(game)
-                    game_over = game.is_over()
-                    transition = [S, a, r, S_prime, game_over]
-                    self.memory.remember(*transition)
+                    game_over = play_result.is_over
+                    S_prime = self.get_game_data(play_result.state)
+                    self.memory.remember(S, actual_a, r, S_prime, game_over)
                     S = S_prime
                 # TODO make this run in parallel
-                loss += training_step(batch_size, gamma, self.memory, model) or 0
-            if game.is_won():
-                win_count += 1
+                loss += training_step(batch_size, learning_rate_gamma, self.memory, model) or 0
+            # if game.is_won():
+            #     win_count += 1
             if epsilon > final_epsilon:
                 new_epsilon = epsilon - delta
                 epsilon = max(new_epsilon, final_epsilon)
             # TODO IDEA better output logging function
-            print("Epoch {:03d}/{:03d} | Loss {:.4f} | Reward {:.1f} | Epsilon {:.2f} | Win count {}"
-                  .format(epoch + 1, nb_epoch, loss, cumulative_r, epsilon, win_count))
+            print("Epoch {:03d}/{:03d} | Loss {:.4f} | Reward {:.1f} | Epsilon {:.2f}"
+                  .format(epoch + 1, nb_epoch, loss, cumulative_r, epsilon))
 
     # TODO IDEA unify
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
