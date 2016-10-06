@@ -8,7 +8,8 @@ from hsa.reward_evaluation import mario_x_speed
 def process_raw_frame(last_frame):
     return np.frombuffer(last_frame, dtype=np.uint8)  # .reshape((1, 2048))
 
-#TODO write action encoders construct
+
+# TODO write action encoders construct
 
 class MarioEmuGame(Game):
     def __init__(self, emu: emu_connect.Emu2, nb_actions=37):
@@ -32,3 +33,27 @@ class MarioEmuGame(Game):
 
     def draw(self):
         return self.last_frame_ram.reshape((32, 64))
+
+
+class MarioReplay(Game):
+    def __init__(self, actions, states, nb_actions=37):
+        super().__init__("super mario bros.", nb_actions)
+        self.states = states
+        self.actions = actions
+        self.index = 0
+        self.nb_frames = self.states.shape[0]
+
+    def get_current_state(self):
+        return self.states.iloc[self.index]
+
+    def play(self, action, repeat_actions=1):
+        index_now = self.index
+        last_frame = self.states.iloc[index_now]
+        self.index += 1
+        return PlayResult(last_frame,
+                          mario_x_speed(last_frame),
+                          numpy_to_rdqn(self.actions.iloc[index_now]),
+                          self.index >= self.nb_frames, False)
+
+    def reset(self):
+        self.index = 0

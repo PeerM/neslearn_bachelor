@@ -120,6 +120,8 @@ class Agent:
                     S_prime = self.get_game_data(play_result.state)
                     self.memory.remember(S, actual_a, r, S_prime, game_over)
                     S = S_prime
+                    if game_over:
+                        break
                 # TODO make this run in parallel
                 batch_loss = training_step(batch_size, learning_rate_gamma, self.memory, model)
                 if batch_loss:
