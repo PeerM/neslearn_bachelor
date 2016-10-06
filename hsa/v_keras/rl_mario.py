@@ -11,6 +11,8 @@ from hsa.v_keras.mario_game import MarioEmuGame
 from hsa.v_keras.memories import load_memories
 from hsa.v_keras.qlearning4k import Agent
 
+# parameters
+
 nb_frames = 1
 ram_size = 2048
 nr_actions = 36
@@ -23,7 +25,8 @@ model_filename = None
 # model_filename = "../dqn_weights/keras/P3_1Layer"
 memories_filename = "../mario_1_1_third.hdf"
 
-# Model
+# Model hyper parameters
+# TODO IDEA model factory methods
 model = Sequential()
 model.add(Flatten(input_shape=(nb_frames, ram_size)))
 model.add(Dense(1024, init="glorot_uniform", activation='relu', W_regularizer=l1()))

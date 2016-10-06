@@ -4,6 +4,16 @@ import matplotlib.pyplot as plt
 import os
 
 
+def training_step(batch_size, gamma, memory, model):
+    batch = memory.get_batch(model=model, batch_size=batch_size, gamma=gamma)
+    # at the start of the training we might not have enough memories build up
+    if batch:
+        inputs, targets = batch
+        batch_loss = float(model.train_on_batch(inputs, targets))
+        return batch_loss
+    return None
+
+
 class Agent:
     def __init__(self, model, memory=None, memory_size=1000, nb_frames=None):
         assert len(model.output_shape) == 2, "Model's output shape should be (nb_samples, nb_actions)."
@@ -30,7 +40,7 @@ class Agent:
         self.memory.memory_size = value
 
     def reset_memory(self):
-        self.exp_replay.reset_memory()
+        self.memory.reset_memory()
 
     def check_game_compatibility(self, game):
         game_output_shape = (1, None) + game.get_frame().shape
@@ -56,9 +66,12 @@ class Agent:
     def clear_frames(self):
         self.frames = None
 
-    def train(self, game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon=[1., .1], epsilon_rate=0.5,
-              reset_memory=False, play_period=1, action_repeat=1):
+    def train(self, game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon=(1., .1), epsilon_rate=0.5, play_period=1, action_repeat=1):
+        # TODO IDEA move game into constructor or maybe not
         self.check_game_compatibility(game)
+        # epsilon: can be single value or tuple for slope
+        # TODO IDEA make epsilon handling more clear
+        # current_epsilon = get_epsilon_schedule(epsilon)[current_epoch]
         if type(epsilon) in {tuple, list}:
             delta = ((epsilon[0] - epsilon[1]) / (nb_epoch * epsilon_rate))
             final_epsilon = epsilon[1]
@@ -72,42 +85,41 @@ class Agent:
             loss = 0.
             game.reset()
             self.clear_frames()
-            if reset_memory:
-                self.reset_memory()
             game_over = False
             S = self.get_game_data(game)
-            r_avg_alpha = 0.9
-            avg_r = 0
+            cumulative_r = 0
             while not game_over:
                 for _1 in range(play_period):
+                    # a: chosen action
+                    # r: accomplished reward
+                    # cumulative_r: performance metric to optimize
+                    # q: the model returns the quality of each action as a number and we want the one it finds most prominent
                     if np.random.random() < epsilon:
                         a = int(np.random.randint(game.nb_actions))
                     else:
                         q = model.predict(S)
                         a = int(np.argmax(q[0]))
+                    # TODO IDEA return a play result instead of mutating the game so much
                     game.play(a,action_repeat)
                     r = game.get_score()
-                    # avg_r = (r_avg_alpha * r) + (1.0 - r_avg_alpha) * avg_r
-                    avg_r += r
+                    cumulative_r += r
                     S_prime = self.get_game_data(game)
                     game_over = game.is_over()
                     transition = [S, a, r, S_prime, game_over]
                     self.memory.remember(*transition)
                     S = S_prime
                 # TODO make this run in parallel
-                batch = self.memory.get_batch(model=model, batch_size=batch_size, gamma=gamma)
-                if batch:
-                    inputs, targets = batch
-                    batch_loss = float(model.train_on_batch(inputs, targets))
-                    loss += batch_loss
+                loss += training_step(batch_size, gamma, self.memory, model) or 0
             if game.is_won():
                 win_count += 1
             if epsilon > final_epsilon:
                 new_epsilon = epsilon - delta
                 epsilon = max(new_epsilon, final_epsilon)
+            # TODO IDEA better output logging function
             print("Epoch {:03d}/{:03d} | Loss {:.4f} | Reward {:.1f} | Epsilon {:.2f} | Win count {}"
-                  .format(epoch + 1, nb_epoch, loss, avg_r, epsilon, win_count))
+                  .format(epoch + 1, nb_epoch, loss, cumulative_r, epsilon, win_count))
 
+    # TODO IDEA unify
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
         self.check_game_compatibility(game)
         model = self.model
