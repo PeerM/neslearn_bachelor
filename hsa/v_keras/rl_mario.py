@@ -38,8 +38,10 @@ memory = ExperienceReplay(memory_size=50000)
 if model_filename:
     model.load_weights(model_filename + ".hdf5")
     epsilon = (0.5, 0.05)
+    epsilon_rate = 0.5
 else:
-    epsilon = (0.8, 0.1)
+    epsilon = (0.6, 0.1)
+    epsilon_rate = 0.3
     load_memories(memory, memories_filename)
 
 prim_soc = socket.create_connection(("localhost", 9090))
@@ -52,7 +54,7 @@ game = MarioEmuGame(emu, nr_actions)
 agent = Agent(model, memory=memory, nb_frames=nb_frames)
 try:
     agent.train(game, nb_epoch=nr_epoch, epsilon=epsilon, play_period=play_period, batch_size=batch_size,
-                action_repeat=4)
+                action_repeat=4, epsilon_rate=epsilon_rate)
     # agent.play(game, nb_epoch=4)
 finally:
     print("stopping")

@@ -15,6 +15,16 @@ def training_step(batch_size, learning_rate_gamma, memory, model):
     return None
 
 
+def make_epsilon_schedule(epsilon_start, epsilon_end, nb_epoch, epsilon_rate):
+    delta = ((epsilon_start - epsilon_end) / (nb_epoch * epsilon_rate))
+    final_epsilon = epsilon_end
+    epsilon = epsilon_start
+    for i in range(nb_epoch):
+        yield epsilon
+        if i / nb_epoch < epsilon_rate:
+            epsilon = max(epsilon - delta, final_epsilon)
+
+
 class Agent:
     def __init__(self, model, memory=None, memory_size=1000, nb_frames=None):
         assert len(model.output_shape) == 2, "Model's output shape should be (nb_samples, nb_actions)."
@@ -66,18 +76,17 @@ class Agent:
     def clear_frames(self):
         self.frames = None
 
-    def train(self, game: Game, nb_epoch=1000, batch_size=50, learning_rate_gamma=0.9, epsilon=(1., .1), epsilon_rate=0.5, play_period=1, action_repeat=1):
+    def train(self, game: Game, nb_epoch=1000, batch_size=50, learning_rate_gamma=0.9, epsilon=(1., .1),
+              epsilon_rate=0.5, play_period=1, action_repeat=1):
         # TODO IDEA move game into constructor or maybe not
         self.check_game_compatibility(game)
         # epsilon: can be single value or tuple for slope
         # TODO IDEA make epsilon handling more clear
         # current_epsilon = get_epsilon_schedule(epsilon)[current_epoch]
         if type(epsilon) in {tuple, list}:
-            delta = ((epsilon[0] - epsilon[1]) / (nb_epoch * epsilon_rate))
-            final_epsilon = epsilon[1]
-            epsilon = epsilon[0]
+            epsilon_schedule = list(make_epsilon_schedule(epsilon[0], epsilon[1], nb_epoch, epsilon_rate))
         else:
-            final_epsilon = epsilon
+            epsilon_schedule = list(make_epsilon_schedule(epsilon, epsilon, nb_epoch, epsilon_rate))
         model = self.model
         # todo Unify this whole nb_actions thing
         nb_actions = model.output_shape[-1]
@@ -89,18 +98,19 @@ class Agent:
             game_over = False
             S = self.get_game_data(game.get_current_state())
             cumulative_r = 0
+            nr_training_sessions = 0
             while not game_over:
                 for _1 in range(play_period):
                     # a: chosen action
                     # r: accomplished reward
                     # cumulative_r: performance metric to optimize
                     # q: the model returns the quality of each action as a number and we want the one it finds most prominent
-                    if np.random.random() < epsilon:
+                    cur_epsilon = epsilon_schedule[epoch]
+                    if np.random.random() < cur_epsilon:
                         chosen_a = int(np.random.randint(game.nb_actions))
                     else:
                         q = model.predict(S)
                         chosen_a = int(np.argmax(q[0]))
-                    # TODO IDEA return a play result instead of mutating the game so much
                     play_result = game.play(chosen_a, action_repeat)
                     # actual_a is needed for of policy learning
                     actual_a = play_result.action
@@ -111,15 +121,15 @@ class Agent:
                     self.memory.remember(S, actual_a, r, S_prime, game_over)
                     S = S_prime
                 # TODO make this run in parallel
-                loss += training_step(batch_size, learning_rate_gamma, self.memory, model) or 0
+                batch_loss = training_step(batch_size, learning_rate_gamma, self.memory, model)
+                if batch_loss:
+                    loss += batch_loss
+                    nr_training_sessions += 1
             # if game.is_won():
             #     win_count += 1
-            if epsilon > final_epsilon:
-                new_epsilon = epsilon - delta
-                epsilon = max(new_epsilon, final_epsilon)
             # TODO IDEA better output logging function
-            print("Epoch {:03d}/{:03d} | Loss {:.4f} | Reward {:.1f} | Epsilon {:.2f}"
-                  .format(epoch + 1, nb_epoch, loss, cumulative_r, epsilon))
+            print("Epoch {:03d}/{:03d} | Loss {:.4f} | Reward {:.1f} | Epsilon {:.2f} | Avg Loss {:.2f}"
+                  .format(epoch + 1, nb_epoch, loss, cumulative_r, epsilon_schedule[epoch], loss / nr_training_sessions))
 
     # TODO IDEA unify
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
