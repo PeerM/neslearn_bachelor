@@ -14,29 +14,33 @@ batch_size = 256
 nr_epoch = 30
 memories_filename = "../mario_1_1_third.hdf"
 
-nr_attempts = 10
-nr_training_iterations = 500
+nr_attempts = 20
+nb_epochs = 100
 
 # including high
-learning_rate_low = -6
-learning_rate_high = -6
+learning_rate_low = -7
+learning_rate_high = -5
 decay_low = 0
-decay_high = 0.4
-decay_steps = 0.02
+decay_high = 0.9
+decay_steps = 0.3
 
 memory = ExperienceReplay(memory_size=50000)
 load_memories(memory, memories_filename)
 
 example_model = first_unstable(nb_frames=nb_frames, ram_size=ram_size, nr_actions=nr_actions)
-batch = memory.get_batch(model=example_model, batch_size=batch_size, gamma=0.9)
+test_data = memory.get_batch(model=example_model, batch_size=batch_size, gamma=0.9)
 
 
 def test_hyperparameters(learning_rate, learning_rate_decay):
     model = first_unstable(learning_rate, learning_rate_decay, nb_frames, ram_size, nr_actions)
-    inputs, targets = batch
-    scores = [float(model.train_on_batch(inputs, targets)) for i in range(nr_training_iterations)]
-    print("{:1e},{:.1f},{:7.3f}".format(learning_rate, learning_rate_decay, scores[- 1]))
-    return scores
+    for i in range(nr_epoch):
+        training_data = memory.get_batch(model=example_model, batch_size=batch_size, gamma=0.9)
+        inputs, targets = training_data
+        loss = model.train_on_batch(inputs, targets)
+        # print("loss: {}".format(loss))
+    score = model.evaluate(test_data[0], test_data[1])
+    print("\n{:1e},{:.1f},{:7.3f}\n".format(learning_rate, learning_rate_decay, score))
+    return score
 
 
 learning_rates = (10 ** random_int for random_int in np.random.randint(learning_rate_low, learning_rate_high + 1, nr_attempts))
@@ -49,4 +53,5 @@ print("variable_space {};".format(variable_space))
 score_df = pandas.DataFrame(
     data=(test_hyperparameters(rate, decay) for (rate, decay) in variable_space),
     index=pandas.MultiIndex.from_tuples(variable_space))
+print(score_df)
 score_df.to_csv("scores{}.csv".format(datetime.datetime.now().timestamp()))

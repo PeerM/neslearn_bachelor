@@ -6,7 +6,7 @@ from hsa.v_keras.mario_game import MarioEmuGame
 from hsa.v_keras.memories import load_memories
 from hsa.v_keras.qlearning4k import Agent
 from hsa.v_keras.qlearning4k import ExperienceReplay
-from hsa.v_keras.model_zoo import make_2_hidden_wide_beginning_stable
+from hsa.v_keras.model_zoo import make_2_hidden_wide_beginning_stable, make_3_hidden_stable
 
 # parameters
 nb_frames = 1
@@ -23,7 +23,7 @@ memories_filename = "../mario_1_1_third.hdf"
 
 # Model hyper parameters
 # TODO IDEA model factory methods
-model = make_2_hidden_wide_beginning_stable(nb_frames, ram_size, nr_actions)
+model = make_3_hidden_stable(nb_frames, ram_size, nr_actions)
 
 memory = ExperienceReplay(memory_size=50000)
 if model_filename:
@@ -31,8 +31,8 @@ if model_filename:
     epsilon = (0.5, 0.05)
     epsilon_rate = 0.5
 else:
-    epsilon = (0.6, 0.1)
-    epsilon_rate = 0.3
+    epsilon = (0.4, 0)
+    epsilon_rate = 0.8
     load_memories(memory, memories_filename)
 
 prim_soc = socket.create_connection(("localhost", 9090))
