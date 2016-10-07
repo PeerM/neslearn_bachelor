@@ -19,12 +19,12 @@ nr_epoch = 60
 model_filename = None
 # model_filename = "./M1"
 # model_filename = "../dqn_weights/keras/P3_1Layer"
-model_filename = "../dqn_weights/keras/tmp/5_layer_firsttime"
+# model_filename = "../dqn_weights/keras/tmp/5_layer_firsttime"
 memories_filename = "../mario_1_1_third.hdf"
 
 # Model hyper parameters
 # TODO IDEA model factory methods
-model = zoo.make_5layer_unstable(nb_frames, ram_size, nr_actions)
+model = zoo.make_8layer_unstable(nb_frames, ram_size, nr_actions)
 
 memory = ExperienceReplay(memory_size=100000)
 if model_filename:

@@ -36,7 +36,8 @@ def make_4layer_unstable(nb_frames=1, ram_size=2048, nr_actions=36, learning_rat
     model.compile(sgd(learning_rate, momentum=0.9, decay=decay), "mse")
     return model
 
-def make_5layer_unstable(nb_frames=1, ram_size=2048, nr_actions=36, learning_rate=1e-5, decay=0.05):
+
+def make_5layer_stable(nb_frames=1, ram_size=2048, nr_actions=36, learning_rate=1e-5, decay=0.05):
     model = Sequential()
     model.add(Flatten(input_shape=(nb_frames, ram_size)))
     model.add(Dense(1024 + 512, init="glorot_uniform", activation='relu', W_regularizer=l1()))
@@ -49,10 +50,30 @@ def make_5layer_unstable(nb_frames=1, ram_size=2048, nr_actions=36, learning_rat
     return model
 
 
+def make_8layer_unstable(nb_frames=1, ram_size=2048, nr_actions=36, learning_rate=1e-5, decay=0.001):
+    model = Sequential()
+    model.add(Flatten(input_shape=(nb_frames, ram_size)))
+    model.add(Dense(2048, init="glorot_uniform", activation='relu'))
+    model.add(Dense(4096, init="glorot_uniform", activation='relu'))
+    model.add(Dense(2048, init="glorot_uniform", activation='relu'))
+    model.add(Dense(1024 + 512, init="glorot_uniform", activation='relu'))
+    model.add(Dense(1024, init="glorot_uniform", activation='relu'))
+    model.add(Dense(512 + 256, init="glorot_uniform", activation='relu'))
+    model.add(Dense(512, init="glorot_uniform", activation='relu'))
+    model.add(Dense(256, init="glorot_uniform", activation='relu'))
+    model.add(Dense(nr_actions))
+    model.compile(sgd(learning_rate, momentum=0.9, decay=decay), "mse")
+    return model
+
+
 def first_unstable(learning_rate=1e-6, decay=0.0, nb_frames=1, ram_size=2048, nr_actions=36):
     model = Sequential()
     model.add(Flatten(input_shape=(nb_frames, ram_size)))
-    model.add(Dense(1024 + 512, init="glorot_uniform", activation='relu', W_regularizer=l1()))
+    model.add(Dense(2048, init="glorot_uniform", activation='relu'))
+    model.add(Dense(4096, init="glorot_uniform", activation='relu'))
+    model.add(Dense(4096, init="glorot_uniform", activation='relu'))
+    model.add(Dense(2048, init="glorot_uniform", activation='relu'))
+    model.add(Dense(1024 + 512, init="glorot_uniform", activation='relu'))
     model.add(Dense(1024, init="glorot_uniform", activation='relu'))
     model.add(Dense(2 ** 9 + 2 ** 8, init="glorot_uniform", activation='relu'))
     model.add(Dense(512, init="glorot_uniform", activation='relu'))
