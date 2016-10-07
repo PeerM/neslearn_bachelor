@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import os
 
 
-def training_step(batch_size, learning_rate_gamma, memory, model):
-    batch = memory.get_batch(model=model, batch_size=batch_size, gamma=learning_rate_gamma)
+def training_step(batch_size, gamma, memory, model):
+    batch = memory.get_batch(model=model, batch_size=batch_size, gamma=gamma)
     # at the start of the training we might not have enough memories build up
     if batch:
         inputs, targets = batch
@@ -76,7 +76,7 @@ class Agent:
     def clear_frames(self):
         self.frames = None
 
-    def train(self, game: Game, nb_epoch=1000, batch_size=50, learning_rate_gamma=0.9, epsilon=(1., .1),
+    def train(self, game: Game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon=(1., .1),
               epsilon_rate=0.5, play_period=1, action_repeat=1):
         # TODO IDEA move game into constructor or maybe not
         self.check_game_compatibility(game)
@@ -123,7 +123,7 @@ class Agent:
                     if game_over:
                         break
                 # TODO make this run in parallel
-                batch_loss = training_step(batch_size, learning_rate_gamma, self.memory, model)
+                batch_loss = training_step(batch_size, gamma, self.memory, model)
                 if batch_loss:
                     loss += batch_loss
                     nr_training_sessions += 1

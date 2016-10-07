@@ -1,18 +1,14 @@
 import socket
 import uuid
 
-from keras.models import Sequential, model_from_json
-from keras.layers import Dense, Flatten, Input, BatchNormalization
-from keras.optimizers import sgd
-from keras.regularizers import l1
-from hsa.v_keras.qlearning4k import ExperienceReplay
 from hsa import emu_connect
 from hsa.v_keras.mario_game import MarioEmuGame
 from hsa.v_keras.memories import load_memories
 from hsa.v_keras.qlearning4k import Agent
+from hsa.v_keras.qlearning4k import ExperienceReplay
+from v_keras.model_zoo import make_2_hidden_wide_beginning_stable
 
 # parameters
-
 nb_frames = 1
 ram_size = 2048
 nr_actions = 36
@@ -27,12 +23,7 @@ memories_filename = "../mario_1_1_third.hdf"
 
 # Model hyper parameters
 # TODO IDEA model factory methods
-model = Sequential()
-model.add(Flatten(input_shape=(nb_frames, ram_size)))
-model.add(Dense(1024, init="glorot_uniform", activation='relu', W_regularizer=l1()))
-model.add(Dense(128, init="glorot_uniform", activation='relu'))
-model.add(Dense(nr_actions))
-model.compile(sgd(lr=10 ** -6, momentum=0.9), "mse")
+model = make_2_hidden_wide_beginning_stable(nb_frames, ram_size, nr_actions)
 
 memory = ExperienceReplay(memory_size=50000)
 if model_filename:
