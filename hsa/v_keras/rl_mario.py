@@ -6,7 +6,7 @@ from hsa.v_keras.mario_game import MarioEmuGame
 from hsa.v_keras.memories import load_memories
 from hsa.v_keras.qlearning4k import Agent
 from hsa.v_keras.qlearning4k import ExperienceReplay
-from v_keras.model_zoo import make_2_hidden_wide_beginning_stable
+from hsa.v_keras.model_zoo import make_2_hidden_wide_beginning_stable
 
 # parameters
 nb_frames = 1

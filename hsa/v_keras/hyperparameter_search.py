@@ -17,7 +17,7 @@ memories_filename = "../mario_1_1_third.hdf"
 nr_attempts = 10
 nr_training_iterations = 500
 
-#including high
+# including high
 learning_rate_low = -6
 learning_rate_high = -6
 decay_low = 0
@@ -35,11 +35,11 @@ def test_hyperparameters(learning_rate, learning_rate_decay):
     model = first_unstable(learning_rate, learning_rate_decay, nb_frames, ram_size, nr_actions)
     inputs, targets = batch
     scores = [float(model.train_on_batch(inputs, targets)) for i in range(nr_training_iterations)]
-    print("{:1e},{:.1f},{:7.3f}".format(learning_rate, learning_rate_decay, scores[nr_training_iterations - 1]))
+    print("{:1e},{:.1f},{:7.3f}".format(learning_rate, learning_rate_decay, scores[- 1]))
     return scores
 
 
-learning_rates = (10 ** random_int for random_int in np.random.randint(learning_rate_low, learning_rate_high+1, nr_attempts))
+learning_rates = (10 ** random_int for random_int in np.random.randint(learning_rate_low, learning_rate_high + 1, nr_attempts))
 decays = (random_int * decay_steps for random_int in np.random.randint(decay_low * 1 / decay_steps, (decay_high * 1 / decay_steps) + 1, nr_attempts))
 # learning_rates = [10 ** i for i in range(3, 11)]
 # decays = [i * 0.1 for i in range(0, 11)]
