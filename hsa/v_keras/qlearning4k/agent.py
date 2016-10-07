@@ -130,8 +130,8 @@ class Agent:
             # if game.is_won():
             #     win_count += 1
             # TODO IDEA better output logging function
-            print("Epoch {:03d}/{:03d} | Loss {:.4f} | Reward {:.1f} | Epsilon {:.2f} | Avg Loss {:.2f}"
-                  .format(epoch + 1, nb_epoch, loss, cumulative_r, epsilon_schedule[epoch], loss / nr_training_sessions))
+            print("Epoch {:03d}/{:03d} ; Frames {} ; Reward {:.1f} ; Epsilon {:.2f} ; Avg Loss {:.2f}"
+                  .format(epoch + 1, nb_epoch, nr_training_sessions, cumulative_r, epsilon_schedule[epoch], loss / nr_training_sessions))
 
     # TODO IDEA unify
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):

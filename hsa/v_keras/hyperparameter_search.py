@@ -14,15 +14,15 @@ batch_size = 256
 nr_epoch = 30
 memories_filename = "../mario_1_1_third.hdf"
 
-nr_attempts = 20
+nr_attempts = 10
 nb_epochs = 100
 
 # including high
-learning_rate_low = -7
+learning_rate_low = -6
 learning_rate_high = -5
 decay_low = 0
-decay_high = 0.9
-decay_steps = 0.3
+decay_high = 0.5
+decay_steps = 0.01
 
 memory = ExperienceReplay(memory_size=50000)
 load_memories(memory, memories_filename)
@@ -39,7 +39,7 @@ def test_hyperparameters(learning_rate, learning_rate_decay):
         loss = model.train_on_batch(inputs, targets)
         # print("loss: {}".format(loss))
     score = model.evaluate(test_data[0], test_data[1])
-    print("\n{:1e},{:.1f},{:7.3f}\n".format(learning_rate, learning_rate_decay, score))
+    print("\n{:1e},{:.2f},{:7.3f}\n".format(learning_rate, learning_rate_decay, score))
     return score
 
 
