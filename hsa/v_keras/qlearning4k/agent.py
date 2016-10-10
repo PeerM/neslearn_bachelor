@@ -1,3 +1,5 @@
+import logging
+
 from hsa.v_keras.qlearning4k.games.game import Game
 from .memory import ExperienceReplay
 import numpy as np
@@ -13,6 +15,9 @@ def training_step(batch_size, gamma, memory, model):
         batch_loss = float(model.train_on_batch(inputs, targets))
         return batch_loss
     return None
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_epsilon_schedule(epsilon_start, epsilon_end, nb_epoch, epsilon_rate):
@@ -76,12 +81,13 @@ class Agent:
     def clear_frames(self):
         self.frames = None
 
+    # noinspection PyPep8Naming
     def train(self, game: Game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon=(1., .1),
               epsilon_rate=0.5, play_period=1, action_repeat=1):
         # TODO IDEA move game into constructor or maybe not
         self.check_game_compatibility(game)
         # epsilon: can be single value or tuple for slope
-        # TODO IDEA make epsilon handling more clear
+        # TODO IDEA zip epsilon with range(epochs) to get rid of lists
         # current_epsilon = get_epsilon_schedule(epsilon)[current_epoch]
         if type(epsilon) in {tuple, list}:
             epsilon_schedule = list(make_epsilon_schedule(epsilon[0], epsilon[1], nb_epoch, epsilon_rate))
@@ -89,6 +95,7 @@ class Agent:
             epsilon_schedule = list(make_epsilon_schedule(epsilon, epsilon, nb_epoch, epsilon_rate))
         model = self.model
         # todo Unify this whole nb_actions thing
+        assert model.output_shape[-1] == game.nb_actions
         nb_actions = model.output_shape[-1]
         win_count = 0
         for epoch in range(nb_epoch):
@@ -130,10 +137,15 @@ class Agent:
             # if game.is_won():
             #     win_count += 1
             # TODO IDEA better output logging function
-            print("Epoch {:03d}/{:03d} ; Frames {} ; Reward {:.1f} ; Epsilon {:.2f} ; Avg Loss {:.2f}"
-                  .format(epoch + 1, nb_epoch, nr_training_sessions, cumulative_r, epsilon_schedule[epoch], loss / nr_training_sessions))
+            logger.info("Epoch {:03d}/{:03d} ; nr_training_sessions {} ; Reward {:.1f} ; Epsilon {:.2f} ; Avg Loss {:.2f}"
+                        .format(epoch + 1, nb_epoch, nr_training_sessions, cumulative_r, epsilon_schedule[epoch], loss / nr_training_sessions))
+            yield {"epoch": epoch + 1,
+                   "nr_training_sessions": nr_training_sessions,
+                   "reward": cumulative_r,
+                   "epsilon": epsilon_schedule[epoch],
+                   "avg_loss": loss / nr_training_sessions}
 
-    # TODO IDEA unify
+    # TODO IDEA unify with train
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
         self.check_game_compatibility(game)
         model = self.model
