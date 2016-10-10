@@ -138,12 +138,12 @@ class Agent:
             #     win_count += 1
             # TODO IDEA better output logging function
             logger.info("Epoch {:03d}/{:03d} ; nr_training_sessions {} ; Reward {:.1f} ; Epsilon {:.2f} ; Avg Loss {:.2f}"
-                        .format(epoch + 1, nb_epoch, nr_training_sessions, cumulative_r, epsilon_schedule[epoch], loss / nr_training_sessions))
+                        .format(epoch + 1, nb_epoch, nr_training_sessions, cumulative_r, epsilon_schedule[epoch], loss / (nr_training_sessions or 1)))
             yield {"epoch": epoch + 1,
                    "nr_training_sessions": nr_training_sessions,
                    "reward": cumulative_r,
                    "epsilon": epsilon_schedule[epoch],
-                   "avg_loss": loss / nr_training_sessions}
+                   "avg_loss": loss / (nr_training_sessions or 1)}
 
     # TODO IDEA unify with train
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
