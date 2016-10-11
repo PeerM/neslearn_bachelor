@@ -17,8 +17,8 @@ nr_attempts = 5
 nb_epochs = 200
 
 # including high
-learning_rate_low = -6
-learning_rate_high = -4
+learning_rate_low = -8
+learning_rate_high = -5
 deterministic_rates = True
 decay_low = 0
 decay_high = 0.2
