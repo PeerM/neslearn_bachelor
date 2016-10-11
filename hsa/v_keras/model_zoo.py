@@ -53,8 +53,8 @@ def make_5layer_stable(nb_frames=1, ram_size=2048, nr_actions=36, learning_rate=
 def make_8layer_unstable(nb_frames=1, ram_size=2048, nr_actions=36, learning_rate=1e-5, decay=0.001):
     model = Sequential()
     model.add(Flatten(input_shape=(nb_frames, ram_size)))
-    model.add(Dense(2048, init="glorot_uniform", activation='relu'))
-    model.add(Dense(4096, init="glorot_uniform", activation='relu'))
+    model.add(Dense(2048, init="glorot_uniform", activation='relu', W_regularizer=l1()))
+    model.add(Dense(4096, init="glorot_uniform", activation='relu', W_regularizer=l1()))
     model.add(Dense(2048, init="glorot_uniform", activation='relu'))
     model.add(Dense(1024 + 512, init="glorot_uniform", activation='relu'))
     model.add(Dense(1024, init="glorot_uniform", activation='relu'))
