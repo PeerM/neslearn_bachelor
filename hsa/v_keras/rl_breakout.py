@@ -73,6 +73,7 @@ agent = Agent(model, memory=memory, nb_frames=nb_frames)
 print("starting")
 epoch_results = list()
 try:
+    # TODO implement changes for continuous mode
     training_generator = agent.train(game, nb_epoch=nr_epoch, epsilon=epsilon, play_period=play_period, batch_size=batch_size,
                                      action_repeat=4, epsilon_rate=epsilon_rate)
     for epoch, epoch_result in enumerate(training_generator):

@@ -4,6 +4,7 @@ import uuid
 import pandas
 
 from hsa import emu_connect
+from hsa.v_keras.functional import epsilon_schedule_gen
 from hsa.v_keras.mario_game import MarioEmuGame
 from hsa.v_keras.memories import load_memories
 from hsa.v_keras.qlearning4k import Agent
@@ -16,7 +17,7 @@ ram_size = 2048
 nr_actions = 36
 play_period = 20
 batch_size = play_period * 32
-nr_epoch = 500
+nr_epoch = None
 save_every_n_epochs = 50
 
 model_filename = None
@@ -30,15 +31,14 @@ model_name = str(uuid.uuid1())
 model = zoo.make_8layer_unstable(nb_frames, ram_size, nr_actions)
 
 # second*minute*hour*n
-memory = ExperienceReplay(memory_size=60 * 60 * 60 * 2)
+memory = ExperienceReplay(memory_size=60 * 60 * 60 * 5)
 if model_filename:
     model.load_weights(model_filename + ".hdf5")
     load_memories(memory, memories_filename)
-    epsilon = (0.1, 0.01)
-    epsilon_rate = 0.4
+    epsilon_schedule = epsilon_schedule_gen(0.2, 0.02, ((nr_epoch or 0) * 0.4 or 800))
 else:
-    epsilon = (0.4, 0)
-    epsilon_rate = 0.7
+    # if continuous mode slope until epoch 800
+    epsilon_schedule = epsilon_schedule_gen(0.5, 0.05, ((nr_epoch or 0) * 0.5 or 800))
     load_memories(memory, memories_filename)
 
 prim_soc = socket.create_connection(("localhost", 9090))
@@ -54,8 +54,8 @@ agent = Agent(model, memory=memory, nb_frames=nb_frames)
 print("starting")
 epoch_results = list()
 try:
-    training_generator = agent.train(game, nb_epoch=nr_epoch, epsilon=epsilon, play_period=play_period, batch_size=batch_size,
-                                     action_repeat=4, epsilon_rate=epsilon_rate)
+    training_generator = agent.train(game, nb_epoch=nr_epoch, epsilon_schedule=epsilon_schedule, play_period=play_period, batch_size=batch_size,
+                                     action_repeat=4)
     for epoch, epoch_result in enumerate(training_generator):
         print(epoch_result)
         epoch_results.append(epoch_result)

@@ -1,10 +1,13 @@
+import datetime
 import logging
 
+from hsa.v_keras.functional import epsilon_schedule_gen
 from hsa.v_keras.qlearning4k.games.game import Game
 from .memory import ExperienceReplay
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import itertools
 
 
 def training_step(batch_size, gamma, memory, model):
@@ -82,23 +85,23 @@ class Agent:
         self.frames = None
 
     # noinspection PyPep8Naming
-    def train(self, game: Game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon=(1., .1),
-              epsilon_rate=0.5, play_period=1, action_repeat=1):
+    def train(self, game: Game, nb_epoch=1000, batch_size=50, gamma=0.9, epsilon_schedule=None, play_period=1, action_repeat=1):
+        print("nb_epoch={}; batch_size={}; play_period={}; action_repeat= {};".format(nb_epoch, batch_size, play_period, action_repeat))
         # TODO IDEA move game into constructor or maybe not
         self.check_game_compatibility(game)
-        # epsilon: can be single value or tuple for slope
-        # TODO IDEA zip epsilon with range(epochs) to get rid of lists
-        # current_epsilon = get_epsilon_schedule(epsilon)[current_epoch]
-        if type(epsilon) in {tuple, list}:
-            epsilon_schedule = list(make_epsilon_schedule(epsilon[0], epsilon[1], nb_epoch, epsilon_rate))
-        else:
-            epsilon_schedule = list(make_epsilon_schedule(epsilon, epsilon, nb_epoch, epsilon_rate))
+
+        if epsilon_schedule is None:
+            epsilon_schedule = epsilon_schedule_gen(1.0, 0.1, nb_epoch / 2)
         model = self.model
         # todo Unify this whole nb_actions thing
         assert model.output_shape[-1] == game.nb_actions
-        nb_actions = model.output_shape[-1]
+        nb_actions = game.nb_actions
         win_count = 0
-        for epoch in range(nb_epoch):
+        if nb_epoch is not None:
+            epoch_gen = range(nb_epoch)
+        else:
+            epoch_gen = itertools.count()
+        for epoch, current_epsilon in zip(epoch_gen, epsilon_schedule):
             loss = 0.
             game.reset()
             self.clear_frames()
@@ -106,15 +109,16 @@ class Agent:
             S = self.get_game_data(game.get_current_state())
             cumulative_r = 0
             nr_training_sessions = 0
+            frames_played = 0
+            epoch_started_at = datetime.datetime.now()
             while not game_over:
                 for _1 in range(play_period):
                     # a: chosen action
                     # r: accomplished reward
                     # cumulative_r: performance metric to optimize
                     # q: the model returns the quality of each action as a number and we want the one it finds most prominent
-                    cur_epsilon = epsilon_schedule[epoch]
-                    if np.random.random() < cur_epsilon:
-                        chosen_a = int(np.random.randint(game.nb_actions))
+                    if np.random.random() < current_epsilon:
+                        chosen_a = int(np.random.randint(nb_actions))
                     else:
                         q = model.predict(S)
                         chosen_a = int(np.argmax(q[0]))
@@ -129,6 +133,8 @@ class Agent:
                     S = S_prime
                     if game_over:
                         break
+                # If there is a game_over in the play period this calculation will be of a bit. For now this is small enough to accept the simplistic implementation
+                frames_played += play_period * action_repeat
                 # TODO make this run in parallel
                 batch_loss = training_step(batch_size, gamma, self.memory, model)
                 if batch_loss:
@@ -137,13 +143,15 @@ class Agent:
             # if game.is_won():
             #     win_count += 1
             # TODO IDEA better output logging function
-            logger.info("Epoch {:03d}/{:03d} ; nr_training_sessions {} ; Reward {:.1f} ; Epsilon {:.2f} ; Avg Loss {:.2f}"
-                        .format(epoch + 1, nb_epoch, nr_training_sessions, cumulative_r, epsilon_schedule[epoch], loss / (nr_training_sessions or 1)))
+            logger.info("Epoch {:03d}; nr_training_sessions {} ; Reward {:.1f} ; Epsilon {:.2f} ; Avg Loss {:.2f}"
+                        .format(epoch + 1, nr_training_sessions, cumulative_r, current_epsilon, loss / (nr_training_sessions or 1)))
             yield {"epoch": epoch + 1,
                    "nr_training_sessions": nr_training_sessions,
                    "reward": cumulative_r,
-                   "epsilon": epsilon_schedule[epoch],
-                   "avg_loss": loss / (nr_training_sessions or 1)}
+                   "epsilon": current_epsilon,
+                   "avg_loss": loss / (nr_training_sessions or 1),
+                   "frames_played": frames_played,
+                   "fps": frames_played / (datetime.datetime.now() - epoch_started_at).seconds}
 
     # TODO IDEA unify with train
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
