@@ -3,6 +3,7 @@ import uuid
 import pandas
 import numpy as np
 
+from hsa.v_keras.functional import epsilon_schedule_gen
 from hsa.v_keras.qlearning4k import Agent
 from hsa.v_keras.qlearning4k import ExperienceReplay
 import hsa.v_keras.model_zoo as zoo
@@ -17,13 +18,13 @@ env = gym.make('Breakout-ram-v0')
 input_size = env.observation_space.shape[0]
 output_size = env.action_space.n
 
-nb_frames = 4
+nb_frames = 1
 ram_size = input_size
 nr_actions = output_size
 play_period = 5
 batch_size = play_period * 32
-nr_epoch = 6000
-save_every_n_epochs = 500
+nr_epoch = None
+save_every_n_epochs = 1000
 
 render_game = False
 
@@ -39,11 +40,9 @@ memory = ExperienceReplay(memory_size=60 * 60 * 60 * 2)
 if model_filename:
     model.load_weights(model_filename + ".hdf5")
     # load_memories(memory, memories_filename)
-    epsilon = (0.1, 0.01)
-    epsilon_rate = 0.4
+    epsilon_schedule = epsilon_schedule_gen(0.2, 0.02, ((nr_epoch or 0) * 0.4 or 1500))
 else:
-    epsilon = (0.8, 0.1)
-    epsilon_rate = 0.3
+    epsilon_schedule = epsilon_schedule_gen(0.9, 0.05, ((nr_epoch or 0) * 0.5 or 1500))
 
 
 class BreakoutGame(Game):
@@ -73,9 +72,8 @@ agent = Agent(model, memory=memory, nb_frames=nb_frames)
 print("starting")
 epoch_results = list()
 try:
-    # TODO implement changes for continuous mode
-    training_generator = agent.train(game, nb_epoch=nr_epoch, epsilon=epsilon, play_period=play_period, batch_size=batch_size,
-                                     action_repeat=4, epsilon_rate=epsilon_rate)
+    training_generator = agent.train(game, nb_epoch=nr_epoch, epsilon_schedule=epsilon_schedule, play_period=play_period, batch_size=batch_size,
+                                     action_repeat=4)
     for epoch, epoch_result in enumerate(training_generator):
         print(epoch_result)
         epoch_results.append(epoch_result)

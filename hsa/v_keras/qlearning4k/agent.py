@@ -145,13 +145,16 @@ class Agent:
             # TODO IDEA better output logging function
             logger.info("Epoch {:03d}; nr_training_sessions {} ; Reward {:.1f} ; Epsilon {:.2f} ; Avg Loss {:.2f}"
                         .format(epoch + 1, nr_training_sessions, cumulative_r, current_epsilon, loss / (nr_training_sessions or 1)))
+            datediff = datetime.datetime.now() - epoch_started_at
+            seconds_elapsed = datediff.seconds
+            fps = frames_played / seconds_elapsed if seconds_elapsed > 0 else frames_played / (datediff.microseconds * 1e-6)
             yield {"epoch": epoch + 1,
                    "nr_training_sessions": nr_training_sessions,
                    "reward": cumulative_r,
                    "epsilon": current_epsilon,
                    "avg_loss": loss / (nr_training_sessions or 1),
                    "frames_played": frames_played,
-                   "fps": frames_played / (datetime.datetime.now() - epoch_started_at).seconds}
+                   "fps": fps}
 
     # TODO IDEA unify with train
     def play(self, game, nb_epoch=10, epsilon=0., visualize=True):
