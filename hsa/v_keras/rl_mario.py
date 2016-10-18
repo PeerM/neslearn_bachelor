@@ -11,6 +11,12 @@ from hsa.v_keras.qlearning4k import Agent
 from hsa.v_keras.qlearning4k import ExperienceReplay
 import hsa.v_keras.model_zoo as zoo
 
+
+def save_epoch_result_csv(model_name, epoch):
+    # noinspection PyTypeChecker
+    pandas.DataFrame.from_dict(epoch_results).to_csv("../dqn_weights/keras/tmp/{}_{}.csv".format(model_name, epoch))
+
+
 # parameters
 nb_frames = 1
 ram_size = 2048
@@ -61,10 +67,10 @@ try:
         epoch_results.append(epoch_result)
         if epoch % save_every_n_epochs == 0:
             model.save_weights("../dqn_weights/keras/tmp/{}_{}.hdf5".format(model_name, epoch))
+            save_epoch_result_csv(model_name, epoch)
             # agent.play(game, nb_epoch=4)
 finally:
     print("stopping")
     model.save_weights("../dqn_weights/keras/tmp/{}_{}.hdf5".format(model_name, "final"))
-    # noinspection PyTypeChecker
-    pandas.DataFrame.from_dict(epoch_results).to_csv("../dqn_weights/keras/tmp/{}.csv".format(model_name))
+    save_epoch_result_csv(model_name, "final")
     emu.close_immediately()
