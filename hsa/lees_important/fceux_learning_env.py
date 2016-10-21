@@ -2,8 +2,21 @@ from extern.fceux_learningenv.nes_python_interface.nes_python_interface import N
 import numpy as np
 import matplotlib.pyplot as plt
 
-mario_rom_path="/home/peer/playground/marionn/Super Mario Bros. (JU) [!].nes"
+mario_rom_path = "/home/peer/playground/marionn/Super Mario Bros. (JU) [!].nes"
 nes = NESInterface(mario_rom_path)
+
+nes.reset_game()
+for i in range(10000):
+    if i % 70 <= 20:
+        print("jump")
+        nes.act(8)
+    else:
+        print("run")
+        nes.act(4)
+    if nes.game_over():
+        print("game over")
+        nes.reset_game()
+        break
 
 # ram_for_ref = np.array(2048, dtype=np.uint8)
 ram = nes.getRAM()
