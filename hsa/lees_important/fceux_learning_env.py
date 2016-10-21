@@ -2,19 +2,21 @@ from extern.fceux_learningenv.nes_python_interface.nes_python_interface import N
 import numpy as np
 import matplotlib.pyplot as plt
 import imageio
+from hsa.nes_python_input import *
 
 mario_rom_path = "/home/peer/playground/marionn/Super Mario Bros. (JU) [!].nes"
 nes = NESInterface(mario_rom_path)
 movie_writer = imageio.get_writer("~/mario_video.mp4", fps=60)
 
 nes.reset_game()
+nes.reset_game()
 for i in range(10000):
     if i % 70 <= 20:
         print("jump")
-        nes.act(8)
+        nes.act(A)
     else:
         print("run")
-        nes.act(4)
+        nes.act(Right)
     movie_writer.append_data(nes.getScreenRGB())
     if nes.game_over():
         print("game over")
