@@ -165,3 +165,9 @@ data/
 /bin_deps/fceux/fceux.cfg
 /kdata/
 /dqn_weights/keras/tmp/
+.idea/neslearn.iml
+Würde .idea/neslearn.iml löschen
+Würde bin_deps/fceux/avis/ löschen
+Würde bin_deps/fceux/cheats/ löschen
+Würde bin_deps/fceux/snaps/ löschen
+Würde hsa/emu_input.ipynb löschen
