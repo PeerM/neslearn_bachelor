@@ -1,0 +1,3 @@
+[submodule "extern/fceux_learningenv"]
+	path = extern/fceux_learningenv
+	url = git@github.com:PeerM/FCEUX_Learning_Environment.git
