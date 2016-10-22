@@ -34,7 +34,7 @@ model_filename = None
 # model_filename = "../dqn_weights/keras/P3_1Layer"
 # model_filename = "../dqn_weights/keras/tmp/5_layer_firsttime"
 memories_filename = "../mario_1_1_third.hdf"
-mario_rom_path = "/home/peer/playground/marionn/mario.nes"
+mario_rom_path = "/home/peer/playground/mario/Super Mario Bros. (JU) [!].nes"
 
 model_name = str(uuid.uuid1())
 # Model hyper parameters

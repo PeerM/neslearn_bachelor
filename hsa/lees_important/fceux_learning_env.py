@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import imageio
 from hsa.nes_python_input import *
 
-mario_rom_path = "/home/peer/playground/marionn/Super Mario Bros. (JU) [!].nes"
+mario_rom_path = "/home/peer/mario.nes"
 nes = NESInterface(mario_rom_path)
 movie_writer = imageio.get_writer("~/mario_video.mp4", fps=60)
 
