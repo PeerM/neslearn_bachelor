@@ -1,3 +1,6 @@
 [submodule "extern/fceux_learningenv"]
 	path = extern/fceux_learningenv
 	url = git@github.com:PeerM/FCEUX_Learning_Environment.git
+[submodule "extern/kerlym"]
+	path = extern/kerlym
+	url = https://github.com/PeerM/kerlym.git
