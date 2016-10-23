@@ -1,6 +1,4 @@
 from extern.fceux_learningenv.nes_python_interface.nes_python_interface import NESInterface
-import numpy as np
-import matplotlib.pyplot as plt
 import imageio
 from hsa.nes_python_input import *
 

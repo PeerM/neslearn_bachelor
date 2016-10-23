@@ -1,0 +1,2 @@
+mario_rom_location = "/home/peer/mario.nes"
+open_ai_gym_monitor_dir = "/mnt/d/neslearn/openaigym/"

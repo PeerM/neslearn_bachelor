@@ -171,3 +171,4 @@ Würde bin_deps/fceux/avis/ löschen
 Würde bin_deps/fceux/cheats/ löschen
 Würde bin_deps/fceux/snaps/ löschen
 Würde hsa/emu_input.ipynb löschen
+/hsa/machine_constants.py
