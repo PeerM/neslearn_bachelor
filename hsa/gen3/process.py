@@ -11,13 +11,6 @@ class MyFancyClass(object):
         print('Doing something fancy in %s for %s!' % (proc_name, self.name))
         return proc_name
 
-
-def worker(requests, responses, class_args, class_kwargs):
-    his_fancy_class = MyFancyClass(*class_args, **class_kwargs)
-    func_name, func_args, func_kwargs = requests.get()
-    responses.put(getattr(his_fancy_class, func_name)(*func_args, **func_kwargs))
-
-
 def better_worker(requests, responses, factory):
     my_instance = factory()
     received = requests.get()
@@ -27,54 +20,57 @@ def better_worker(requests, responses, factory):
         received = requests.get()
 
 
-def make_dynamic(factory):
-    requests = multiprocessing.Queue()
-    responses = multiprocessing.Queue()
-    p = multiprocessing.Process(target=better_worker, args=(requests, responses, factory))
-    p.start()
+class DynamicProxyProcess(object):
+    def __init__(self, factory):
+        self.responses = multiprocessing.Queue()
+        self.requests = multiprocessing.Queue()
+        self.p = multiprocessing.Process(target=better_worker, args=(self.requests, self.responses, factory))
+        self.p.start()
 
-    def call_remote(method_name, *args, **kwargs):
-        requests.put((method_name, args, kwargs))
-        return responses.get()
+    def _call_remote(self, method_name, *args, **kwargs):
+        self.requests.put((method_name, args, kwargs))
+        return self.responses.get()
 
-    class DynamicProxyProcess(object):
-        def __getattribute__(self, s):
-            """
-            this is called whenever any attribute of a NewCls object is accessed. This function first tries to
-            get the attribute off NewCls. If it fails then it tries to fetch the attribute from self.oInstance (an
-            instance of the decorated class). If it manages to fetch the attribute from self.oInstance, and
-            the attribute is an instance method then `time_this` is applied.
-            """
-            try:
-                x = super(DynamicProxyProcess, self).__getattribute__(s)
-            except AttributeError:
-                pass
-            else:
-                return x
-            return functools.partial(call_remote, method_name=s)
+    def __getattribute__(self, s):
+        """
+        this is called whenever any attribute of a NewCls object is accessed. This function first tries to
+        get the attribute off NewCls. If it fails then it tries to fetch the attribute from self.oInstance (an
+        instance of the decorated class). If it manages to fetch the attribute from self.oInstance, and
+        the attribute is an instance method then `time_this` is applied.
+        """
+        try:
+            x = super(DynamicProxyProcess, self).__getattribute__(s)
+        except AttributeError:
+            pass
+        else:
+            return x
+        return functools.partial(self._call_remote, method_name=s)
 
-        def __enter__(self):
-            return self
+    def __enter__(self):
+        return self
 
-        def __exit__(self, type, value, traceback):
-            requests.put("poison")
-            requests.close()
-            requests.join_thread()
-            responses.close()
-            responses.join_thread()
-            p.join()
-
-    return DynamicProxyProcess()
+    def __exit__(self, type, value, traceback):
+        self.requests.put("poison")
+        self.requests.close()
+        self.requests.join_thread()
+        self.responses.close()
+        self.responses.join_thread()
+        self.p.join()
 
 
 def fancy_class_factory():
     return MyFancyClass("first_child")
+def fancy_class_factory2():
+    return MyFancyClass("second_child")
 
 
 def main():
-    with make_dynamic(fancy_class_factory) as proxy:
-        print("main received:", proxy.do_something())
-        print("main received:", proxy.do_something())
+    with DynamicProxyProcess(fancy_class_factory) as proxy:
+        with DynamicProxyProcess(fancy_class_factory2) as proxy2:
+            print("main received from 1:", proxy.do_something())
+            print("main received from 2:", proxy2.do_something())
+            print("main received from 1:", proxy.do_something())
+
         # requests = multiprocessing.Queue()
         # responses = multiprocessing.Queue()
         # args = ["he"]
