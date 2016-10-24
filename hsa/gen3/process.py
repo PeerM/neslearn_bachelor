@@ -2,7 +2,7 @@ import functools
 import multiprocessing
 
 
-class MyFancyClass(object):
+class _MyFancyClass(object):
     def __init__(self, name):
         self.name = name
 
@@ -11,25 +11,27 @@ class MyFancyClass(object):
         print('Doing something fancy in %s for %s!' % (proc_name, self.name))
         return proc_name
 
-def better_worker(requests, responses, factory):
+
+def _better_worker(connection, factory):
     my_instance = factory()
-    received = requests.get()
-    while received != "poison":
-        func_name, func_args, func_kwargs = received
-        responses.put(getattr(my_instance, func_name)(*func_args, **func_kwargs))
-        received = requests.get()
+    try:
+        while True:
+            func_name, func_args, func_kwargs = connection.recv()
+            connection.send(getattr(my_instance, func_name)(*func_args, **func_kwargs))
+    except EOFError:
+        pass
 
 
 class DynamicProxyProcess(object):
     def __init__(self, factory):
-        self._responses = multiprocessing.Queue()
-        self._requests = multiprocessing.Queue()
-        self._p = multiprocessing.Process(target=better_worker, args=(self._requests, self._responses, factory))
+        self._parent_con, self._child_con = multiprocessing.Pipe(duplex=True)
+        self._p = multiprocessing.Process(target=_better_worker, args=(self._child_con, factory))
+        self._p.daemon = True
         self._p.start()
 
     def _call_remote(self, method_name, *args, **kwargs):
-        self._requests.put((method_name, args, kwargs))
-        return self._responses.get()
+        self._parent_con.send((method_name, args, kwargs))
+        return self._parent_con.recv()
 
     def __getattribute__(self, s):
         """
@@ -50,18 +52,16 @@ class DynamicProxyProcess(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        self._requests.put("poison")
-        self._requests.close()
-        self._requests.join_thread()
-        self._responses.close()
-        self._responses.join_thread()
+        self._parent_con.close()
         self._p.join()
 
 
 def fancy_class_factory():
-    return MyFancyClass("first_child")
+    return _MyFancyClass("first_child")
+
+
 def fancy_class_factory2():
-    return MyFancyClass("second_child")
+    return _MyFancyClass("second_child")
 
 
 def main():
@@ -70,20 +70,7 @@ def main():
             print("main received from 1:", proxy.do_something())
             print("main received from 2:", proxy2.do_something())
             print("main received from 1:", proxy.do_something())
-
-        # requests = multiprocessing.Queue()
-        # responses = multiprocessing.Queue()
-        # args = ["he"]
-        # kwargs = {}
-        # p = multiprocessing.Process(target=worker, args=(requests, responses, args, kwargs))
-        # p.start()
-        #
-        # requests.put(("do_something", [], {}))
-        # print("main received:", responses.get())
-        # # Wait for the worker to finish
-        # requests.close()
-        # requests.join_thread()
-        # p.join()
+    loos_proxy= DynamicProxyProcess(fancy_class_factory())
 
 
 if __name__ == '__main__':
