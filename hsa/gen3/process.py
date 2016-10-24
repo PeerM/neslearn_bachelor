@@ -22,14 +22,14 @@ def better_worker(requests, responses, factory):
 
 class DynamicProxyProcess(object):
     def __init__(self, factory):
-        self.responses = multiprocessing.Queue()
-        self.requests = multiprocessing.Queue()
-        self.p = multiprocessing.Process(target=better_worker, args=(self.requests, self.responses, factory))
-        self.p.start()
+        self._responses = multiprocessing.Queue()
+        self._requests = multiprocessing.Queue()
+        self._p = multiprocessing.Process(target=better_worker, args=(self._requests, self._responses, factory))
+        self._p.start()
 
     def _call_remote(self, method_name, *args, **kwargs):
-        self.requests.put((method_name, args, kwargs))
-        return self.responses.get()
+        self._requests.put((method_name, args, kwargs))
+        return self._responses.get()
 
     def __getattribute__(self, s):
         """
@@ -50,12 +50,12 @@ class DynamicProxyProcess(object):
         return self
 
     def __exit__(self, type, value, traceback):
-        self.requests.put("poison")
-        self.requests.close()
-        self.requests.join_thread()
-        self.responses.close()
-        self.responses.join_thread()
-        self.p.join()
+        self._requests.put("poison")
+        self._requests.close()
+        self._requests.join_thread()
+        self._responses.close()
+        self._responses.join_thread()
+        self._p.join()
 
 
 def fancy_class_factory():
