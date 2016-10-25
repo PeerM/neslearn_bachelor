@@ -1,4 +1,5 @@
 from hsa.gen3.nes_env import NesEnv
+from hsa.gen3.process import DynamicProxyProcess
 from hsa.machine_constants import mario_rom_location, open_ai_gym_monitor_dir
 from kerlym import agents
 from kerlym.agents.dqn.networks import simple_dnn
@@ -19,13 +20,16 @@ parser.add_option("-F", "--plot_rate", dest="plot_rate", default=1, type='int', 
 parser.add_option("-a", "--agent", dest="agent", default="dqn",                         help="Which learning algorithm to use [%default]")
 parser.add_option("-i", "--difference", dest="difference_obs", action="store_true", default=False,  help="Compute Difference Image for Training [%default]")
 parser.add_option("-r", "--learning_rate", dest="learning_rate", type='float', default=1e-4,  help="Learning Rate [%default]")
-parser.add_option("-E", "--preprocessor", dest="preprocessor", default="none",         help="Preprocessor [%default]")
 parser.add_option("-R", "--render", dest="render", action='store_true', default=False,  help="Render game progress [%default]")
 parser.add_option("-c", "--concurrency", dest="nthreads", type='int', default=1,  help="Number of Worker Threads [%default]")
 (options, args) = parser.parse_args()
 
 
-env_factory = lambda: NesEnv(mario_rom_location, frameskip=4)
+def nes_factory():
+    return NesEnv(mario_rom_location, frameskip=4)
+
+
+env_factory = lambda: DynamicProxyProcess(nes_factory)
 
 
 
