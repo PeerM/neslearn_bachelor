@@ -9,6 +9,7 @@ future
 numpy
 pyyaml
 appdirs
-nes_python_interface >= 0.0.4
+nes_python_interface >= 0.0.5
 
 gym
+tensorflow
