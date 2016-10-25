@@ -1,5 +1,5 @@
+from hsa.gen3.fceux_process import fceux_process_factory
 from hsa.gen3.nes_env import NesEnv
-from hsa.gen3.process import DynamicProxyProcess
 from hsa.machine_constants import mario_rom_location, open_ai_gym_monitor_dir
 from kerlym import agents
 from kerlym.agents.dqn.networks import simple_dnn
@@ -24,18 +24,16 @@ parser.add_option("-R", "--render", dest="render", action='store_true', default=
 parser.add_option("-c", "--concurrency", dest="nthreads", type='int', default=1,  help="Number of Worker Threads [%default]")
 (options, args) = parser.parse_args()
 
-
-def nes_factory():
-    return NesEnv(mario_rom_location, frameskip=4)
-
-
-env_factory = lambda: DynamicProxyProcess(nes_factory)
+if options.nthreads > 1:
+    env_factory = lambda: fceux_process_factory(mario_rom_location, frameskip=4)
+else:
+    env_factory = lambda: NesEnv(mario_rom_location, frameskip=4)
 
 
 
 agent = agents.DQN(
                     env=env_factory,
-                    nthreads=1,
+                    nthreads=options.nthreads,
                     nframes=1,
                     epsilon=0.5,
                     discount=options.discount,

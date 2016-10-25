@@ -22,27 +22,26 @@ except ImportError as e:
     raise error.DependencyNotInstalled("{}. (HINT: build and install fceux interface)".format(e))
 
 
-class NesEnv(Env, utils.EzPickle):
+class NesEnv(Env):
     metadata = {'render.modes': ['human', 'rgb_array']}
     nr_actions = 36
 
-    def __init__(self, game_path="~/mario.nes", frameskip=1, obs_type="ram", score_compatibility="v_keras"):
+    def __init__(self, game_path="~/mario.nes", frameskip=1, obs_type="ram", score_compatibility="v_keras", nes=None):
         """
             :arg score_compatibility witch scoring system to be compatible to
         """
 
-        # noinspection PyCallByClass,PyTypeChecker
-        utils.EzPickle.__init__(self, game_path, frameskip)
         self.score_compatibility = score_compatibility
         assert obs_type in ('ram', 'image')
-
-        self.game_path = game_path
-        if not os.path.exists(self.game_path):
-            raise IOError('path %s does not exist' % self.game_path)
+        if nes is None:
+            game_path = game_path
+            if not os.path.exists(game_path):
+                raise IOError('path %s does not exist' % game_path)
+            self.nes = NESInterface(game_path)
+        else:
+            self.nes = nes
         self._obs_type = obs_type
         self.frameskip = frameskip
-        self.nes = NESInterface(game_path)
-        self.viewer = None
 
         self._seed()
 
@@ -87,21 +86,19 @@ class NesEnv(Env, utils.EzPickle):
         return ob, reward, self.nes.lives() <= 1, {}
 
     def _render(self, mode='human', close=False):
-        if close:
-            if self.viewer is not None:
-                self.viewer.close()
-                self.viewer = None
-            return
-        img = self.nes.getScreenRGB()
         if mode == 'rgb_array':
-            return img
+            return self.nes.getScreenRGB()
         elif mode == 'human':
-            from gym.envs.classic_control import rendering
-            if self.viewer is None:
-                self.viewer = rendering.SimpleImageViewer()
-            self.viewer.imshow(img)
+            # ignore the close render because fceux can't close the emulator and gui separately
+            if not close:
+                self.nes.render()
 
     def _close(self):
+        # try:
+        #     self.nes._close()
+        #     return
+        # except AttributeError:
+        #     pass
         del self.nes
 
     def _reset(self):
