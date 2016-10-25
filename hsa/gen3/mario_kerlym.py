@@ -32,6 +32,7 @@ else:
 
 
 agent = agents.DQN(
+                    experiment=options.env,
                     env=env_factory,
                     nthreads=options.nthreads,
                     nframes=1,
@@ -49,4 +50,7 @@ agent = agents.DQN(
                     preprocessor = None,
                     render = options.render
                     )
+agent.render_rate_hz = 2.0
+agent.render_ngames = 3
+agent.checkpoint_interval = 10000
 agent.train()
