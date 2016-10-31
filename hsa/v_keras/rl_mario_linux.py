@@ -5,6 +5,7 @@ import itertools
 import pandas
 
 from hsa import emu_connect
+from hsa import machine_constants
 from hsa.v_keras.functional import epsilon_schedule_gen
 from hsa.v_keras.mario_game import MarioEmuGame
 from hsa.v_keras.mario_game_direct import FceuxMarioEmuGame
@@ -29,12 +30,13 @@ batch_size = play_period * 32
 nr_epoch = None
 save_every_n_epochs = 50
 
-model_filename = None
+# model_filename = None
 # model_filename = "./M1"
 # model_filename = "../dqn_weights/keras/P3_1Layer"
-# model_filename = "../dqn_weights/keras/tmp/5_layer_firsttime"
+model_filename = "../2d2e0a9e-9097-11e6-93d4-901b0e5162b8_final"
 memories_filename = "../mario_1_1_third.hdf"
-mario_rom_path = "/home/peer/playground/mario/Super Mario Bros. (JU) [!].nes"
+mario_rom_path = machine_constants.mario_rom_location
+# mario_rom_path = "/home/peer/playground/marionn/mario.nes"
 
 model_name = str(uuid.uuid1())
 # Model hyper parameters
@@ -46,6 +48,7 @@ if model_filename:
     model.load_weights(model_filename + ".hdf5")
     load_memories(memory, memories_filename)
     epsilon_schedule = itertools.repeat(0.05)
+    print("loaded model")
 else:
     # if continuous mode slope until epoch 800
     epsilon_schedule = epsilon_schedule_gen(0.5, 0.05, ((nr_epoch or 0) * 0.5 or 800))

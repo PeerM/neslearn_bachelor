@@ -2,14 +2,14 @@ from hsa.gen3.fceux_process import fceux_process_factory
 from hsa.gen3.nes_env import NesEnv
 from hsa.machine_constants import mario_rom_location, open_ai_gym_monitor_dir
 from kerlym import agents
-from kerlym.agents.dqn.networks import simple_dnn
+import kerlym.agents.dqn.networks as dqn_networks
+import kerlym.agents.a3c.networks as a3c_networks
 
 from optparse import OptionParser
 
 parser = OptionParser()
 parser.add_option("-e", "--env", dest="env", default="Mario-ram-v3", help="Which GYM Environment to run [%default]")
 parser.add_option("-b", "--batch_size", dest="bs", default=120, type='int', help="Batch size durring NN training [%default]")
-parser.add_option("-o", "--dropout", dest="dropout", default=0.5, type='float', help="Dropout rate in Q-Fn NN [%default]")
 parser.add_option("-p", "--epsilon", dest="epsilon", default=0.2, type='float', help="Exploration(1.0) vs Exploitation(0.0) action probability [%default]")
 parser.add_option("-D", "--epsilon_decay", dest="epsilon_decay", default=1e-6, type='float', help="Rate of epsilon decay: epsilon*=(1-decay) [%default]")
 parser.add_option("-s", "--epsilon_min", dest="epsilon_min", default=0.05, type='float', help="Min epsilon value after decay [%default]")
@@ -41,10 +41,9 @@ agent = agents.DQN(
     nframes=1,
     epsilon=0.5,
     discount=options.discount,
-    modelfactory=simple_dnn,
+    modelfactory=dqn_networks.simple_dnn,
     epsilon_schedule=lambda episode, epsilon: epsilon * (1 - options.epsilon_decay),
     batch_size=options.bs,
-    dropout=options.dropout,
     stats_rate=options.plot_rate,
     enable_plots=options.plots,
     max_memory=options.maxmem,

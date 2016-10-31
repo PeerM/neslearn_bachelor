@@ -12,5 +12,7 @@ for i in range(200):
     start_time = datetime.datetime.now()
     for j in range(240):
         nes.act(A)
+        if j % 2 == 0:
+            nes.render()
     end_time = datetime.datetime.now()
     print(end_time - start_time)
