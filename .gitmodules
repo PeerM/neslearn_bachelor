@@ -4,6 +4,6 @@
 [submodule "extern/kerlym"]
 	path = extern/kerlym
 	url = https://github.com/PeerM/kerlym.git
-[submodule "extern/async-rl"]
-	path = extern/async-rl
+[submodule "extern/muupan-async-rl"]
+	path = extern/muupan-async-rl
 	url = git@github.com:muupan/async-rl.git
