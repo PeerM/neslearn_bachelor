@@ -7,3 +7,6 @@
 [submodule "extern/muupan-async-rl"]
 	path = extern/muupan-async-rl
 	url = git@github.com:muupan/async-rl.git
+[submodule "extern/ehrenbrav_fceux"]
+	path = extern/ehrenbrav_fceux
+	url = git@github.com:ehrenbrav/FCEUX_Learning_Environment.git
