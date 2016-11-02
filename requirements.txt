@@ -9,7 +9,8 @@ future
 numpy
 pyyaml
 appdirs
-nes_python_interface >= 0.0.5
+hsa_nes_python_interface >= 0.0.6
+nes_python_interface == 0.0.1
 
-gym
+gym[all]
 tensorflow
