@@ -10,3 +10,11 @@
 [submodule "extern/ehrenbrav_fceux"]
 	path = extern/ehrenbrav_fceux
 	url = git@github.com:ehrenbrav/FCEUX_Learning_Environment.git
+[submodule "extern/nes-async-rl"]
+	path = extern/nes-async-rl
+	url = https://github.com/PeerM/async-rl-fork.git
+	branch = origin/eb
+[submodule "extern/gym-async-rl"]
+	path = extern/gym-async-rl
+	url = https://github.com/PeerM/async-rl-fork.git
+	branch = origin/gym
