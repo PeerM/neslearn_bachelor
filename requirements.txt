@@ -14,3 +14,8 @@ nes_python_interface == 0.0.1
 
 gym[all]
 tensorflow
+
+
+chainer
+cached_property
+statistics
