@@ -5,14 +5,15 @@ from hsa.machine_constants import mario_rom_location
 from hsa.nes_python_input import *
 
 mario_rom_path = mario_rom_location
-nes = NESInterface(mario_rom_path)
+nes = NESInterface(mario_rom_path,True)
+# nes = NESInterface(mario_rom_path,False,120)
 
 nes.reset_game()
 for i in range(200):
     start_time = datetime.datetime.now()
     for j in range(240):
         nes.act(A)
-        if j % 2 == 0:
-            nes.render()
+        # if j % 2 == 0:
+        #     nes.render()
     end_time = datetime.datetime.now()
     print(end_time - start_time)
