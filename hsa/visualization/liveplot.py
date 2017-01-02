@@ -14,19 +14,21 @@ class LivePlotter(object):
         super().__init__()
         self.fig = plt.figure()
         self.ax1 = self.fig.add_subplot(1, 1, 1)
-        self.xs = collections.deque([None] * size, maxlen=size)
+        self.xs = list(range(size))
+        # self.xs = collections.deque([None] * size, maxlen=size)
         self.ys = collections.deque([None] * size, maxlen=size)
         self.interval = int(interval)
+        self.ani = animation.FuncAnimation(self.fig, self.animate, interval=self.interval)
 
     def animate(self, i):
-        self.xs.append(i)
-        self.ys.append(random())
         self.ax1.clear()
-        self.ax1.plot(self.xs, self.ys)
+        self.ax1.scatter(self.xs, self.ys)
 
     def start(self):
-        ani = animation.FuncAnimation(self.fig, self.animate, interval=self.interval)
         plt.show()
+
+    def stop(self):
+        self.ani.repeat = False
 
 if __name__ == "__main__":
     LivePlotter(100, 7).start()

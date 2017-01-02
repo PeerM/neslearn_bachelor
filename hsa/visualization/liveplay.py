@@ -1,23 +1,34 @@
 import socket
 
 from hsa import emu_connect
+from hsa.nes_python_input import py_to_nes_wrapper
 from hsa.reward_evaluation import mario_x_speed
+from hsa.visualization.liveplot2 import Plotter
+from nes_python_interface.nes_python_interface import NESInterface
+import hsa.machine_constants
 from hsa.visualization.liveplot import LivePlotter
+import pandas
+inputs = pandas.read_hdf("../mario_1_1_first.hdf", key="inputs")
+movie = "../bin_deps/fceux/movies/happylee-supermariobros,warped.fm2"
+nes = NESInterface(hsa.machine_constants.mario_rom_location,eb_compatible=False,auto_render_period=1)
 
-prim_soc = socket.create_connection(("localhost", 9090))
-prim_soc.setblocking(True)
-emu = emu_connect.Emu2(prim_soc)
 
-#plotter = LivePlotter()
+plotter = Plotter(interval=100, history_length=2000)
+
+plotter.start()
+print(inputs.iloc[60])
+print(py_to_nes_wrapper(inputs.iloc[60]))
 
 def visualize_ram(ram):
-    print(mario_x_speed(ram))
+    plotter.plot(mario_x_speed(ram))
 
 try:
-    for _ in range(400):
-        for _ in range(10):
-            emu.step()
-        visualize_ram(emu.get_ram())
+    nes.reset_game()
+    for row in inputs.iterrows():
+        reward = nes.act(py_to_nes_wrapper(row[1]))
+        # plotter.plot(mario_x_speed(nes.getRAM()))
+        plotter.plot(reward)
+    plotter.stop()
 except KeyboardInterrupt:
     pass
     #emu.close()
