@@ -34,45 +34,53 @@ class PlayerState:
     dying = 0x0B
 
 
-def make_delta_potential():
-    # logger = logging.getLogger(__name__)
-    last_potential = 0
-    state = "initial"
+def potential(ram, state):
+    # only applicable to level 1-1
+    if not (ram[0x0760] == 0 and ram[0x075F] == 0):
+        return 0 , state
 
-    def delta_potential(ram):
-        # only applicable to level 1-1
-        if not (ram[0x0760] == 0 and ram[0x075F] == 0):
-            return 0
-        nonlocal state
-        nonlocal last_potential
+    screen = ram[0x071A]
+    player_state = ram[0x000E]
+    if player_state == PlayerState.going_down_a_pipe:
+        state = "going down"
+    if state == "going down" and screen == 0:
+    # if state == "going down" and player_state == PlayerState.Leftmost_of_screen:
+        state = "in shortcut"
+    if state == "in shortcut" and player_state == PlayerState.entering_reversed_L_pipe:
+        state = "going up"
+    # if state == "going up" and screen == 0:
+    if state == "going up" and player_state == PlayerState.Leftmost_of_screen:
+        state = "initial"
+    if state == "in shortcut" and (player_state == PlayerState.dying or player_state == PlayerState.player_dies):
+        # player might die in shortcut, for example times up
+        state = "initial"
 
-        screen = ram[0x071A]
-        player_state = ram[0x000E]
-        if player_state == PlayerState.going_down_a_pipe:
-            state = "going down"
-        # if state == "going down" and screen == 0:
-        if state == "going down" and player_state == PlayerState.Leftmost_of_screen:
-            state = "in shortcut"
-        if state == "in shortcut" and player_state == PlayerState.entering_reversed_L_pipe:
-            state = "going up"
-        # if state == "going up" and screen == 0:
-        if state == "going up" and player_state == PlayerState.Leftmost_of_screen:
-            state = "initial"
-        if state == "in shortcut" and (player_state == PlayerState.dying or player_state == PlayerState.player_dies):
-            # player might die in shortcut, for example times up
-            state = "initial"
+    potential_offset = 0
+    if state == "in shortcut" or state == "going up":
+        potential_offset = 9
 
-        potential_offset = 0
-        if state == "in shortcut" or state == "going up":
-            potential_offset = 6
+    current_potential = screen + potential_offset
 
-        current_potential = screen + potential_offset
+    return current_potential, state
 
-        delta = current_potential - last_potential
-        last_potential = current_potential
+
+def make_delta(func, initial_value, initial_residual):
+    last_value = initial_value
+    last_residual = initial_residual
+
+    def state_func(ram):
+        nonlocal last_value
+        nonlocal last_residual
+        current_value, current_residual = func(ram, last_residual)
+        delta = current_value - last_value
+        last_value = current_value
         return delta
 
-    return delta_potential
+    return state_func
+
+
+def make_delta_potential():
+    return make_delta(potential, 0, "initial")
 
 
 def time_left(ram):
