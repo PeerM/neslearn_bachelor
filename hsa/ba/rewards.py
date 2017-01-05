@@ -26,28 +26,48 @@ def mario_x_speed(ram: bytes):
     return round(raw / 50, 1)
 
 
-# TODO: fix. currently incorrect
+class PlayerState:
+    Leftmost_of_screen = 0x00
+    entering_reversed_L_pipe = 0x02
+    going_down_a_pipe = 0x03
+    player_dies = 0x06
+    dying = 0x0B
+
+
 def make_delta_potential():
-    logger = logging.getLogger(__name__)
+    # logger = logging.getLogger(__name__)
     last_potential = 0
+    state = "initial"
 
     def delta_potential(ram):
         # only applicable to level 1-1
         if not (ram[0x0760] == 0 and ram[0x075F] == 0):
             return 0
-        current_screen = ram[0x071A]
-        next_screen = ram[0x071B]
-        if current_screen == 0:
-            if next_screen == 4:
-                current_potential = 9
-            elif next_screen == 0:
-                current_potential = 0
-            else:
-                logger.warn("unknown current/ next screen combination")
-                current_potential = 0
-        else:
-            current_potential = current_screen
+        nonlocal state
         nonlocal last_potential
+
+        screen = ram[0x071A]
+        player_state = ram[0x000E]
+        if player_state == PlayerState.going_down_a_pipe:
+            state = "going down"
+        # if state == "going down" and screen == 0:
+        if state == "going down" and player_state == PlayerState.Leftmost_of_screen:
+            state = "in shortcut"
+        if state == "in shortcut" and player_state == PlayerState.entering_reversed_L_pipe:
+            state = "going up"
+        # if state == "going up" and screen == 0:
+        if state == "going up" and player_state == PlayerState.Leftmost_of_screen:
+            state = "initial"
+        if state == "in shortcut" and (player_state == PlayerState.dying or player_state == PlayerState.player_dies):
+            # player might die in shortcut, for example times up
+            state = "initial"
+
+        potential_offset = 0
+        if state == "in shortcut" or state == "going up":
+            potential_offset = 6
+
+        current_potential = screen + potential_offset
+
         delta = current_potential - last_potential
         last_potential = current_potential
         return delta
@@ -57,6 +77,7 @@ def make_delta_potential():
 
 def time_left(ram):
     return int("".join([str(ram[0x07F8 + i]) for i in range(3)]))
+
 
 def reward_for_time_left(ram):
     # 0713 - Used during flag contact
