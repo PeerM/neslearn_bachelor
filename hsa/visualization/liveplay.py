@@ -10,10 +10,10 @@ import hsa.machine_constants
 from hsa.visualization.liveplot import LivePlotter
 import pandas
 
-movie = "../bin_deps/fceux/movies/happylee-supermariobros,warped.fm2"
+# movie = "../bin_deps/fceux/movies/happylee-supermariobros,warped.fm2"
+movie = "../movies/5_1-1_without-shortcut.fm2"
 discount_factor_gamma = 0.9
 
-nes = NESInterface(hsa.machine_constants.mario_rom_location, eb_compatible=False, auto_render_period=1)
 
 plotter = Plotter(interval=2000, history_length=4000)
 
@@ -27,6 +27,7 @@ def visualize_ram(ram):
 try:
     # nes.reset_game()
     with open(movie) as movie_file:
+        nes = NESInterface(hsa.machine_constants.mario_rom_location, eb_compatible=False, auto_render_period=1)
         cumulative_reward = 0
         discounted_cumulative_reward = 0
         for combi in parse_fm2(movie_file):
