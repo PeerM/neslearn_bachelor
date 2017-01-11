@@ -10,7 +10,7 @@ from scipy import misc
 import hsa
 import hsa.ba.rewards
 import hsa.machine_constants
-from extern.fceux_learningenv.nes_python_interface.nes_python_interface import NESInterface
+from extern.fceux_learningenv.nes_python_interface.nes_python_interface import NESInterface, RewardTypes
 from hsa.nes_python_input import *
 from hsa.visualization.parse_fm2 import parse_fm2
 
@@ -43,7 +43,10 @@ def plot_rewards(rewards):
 
 def play_and_record(movie_path,video_name, reward_func):
     movie_writer = imageio.get_writer(video_name, fps=60, quality=9)
-    nes = NESInterface(hsa.machine_constants.mario_rom_location, eb_compatible=False, auto_render_period=3, reward_function=reward_func)
+    nes = NESInterface(hsa.machine_constants.mario_rom_location, eb_compatible=False,
+                       auto_render_period=3,
+                       reward_type=RewardTypes.simple_function,
+                       reward_function=reward_func)
     with open(movie_path) as movie_file:
         inputs_from_movie = list(parse_fm2(movie_file))
 
