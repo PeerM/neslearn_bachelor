@@ -1,5 +1,7 @@
 import logging
 
+import math
+
 
 def make_delta_points():
     last = 0
@@ -63,46 +65,41 @@ def potential(ram, state):
 
     return current_potential, state, False
 
-"""kind can be delta, all or normal"""
-def make_fine_potential(kind="delta"):
-    state = "initial"
-    last_coarse = None
-    last_fine = None
-    fine_state = "alive"
 
+
+
+def make_fine_potential(kind="delta"):
+    """kind can be delta, all or normal"""
+    state = "initial"
+    last_sum = 0
+    last_fine = 0
+
+    # this function returns not stellar values before the start of 1-1
     def inner_fine_potential(ram):
         nonlocal state
-        nonlocal last_coarse
+        nonlocal last_sum
         nonlocal last_fine
-        nonlocal fine_state
         # only applicable to level 1-1
         if not (ram[0x0760] == 0 and ram[0x075F] == 0):
+            if kind == "all":
+                return {"current_sum": 0}
             return 0
 
         coarse_x = ram[0x006D]
         player_state = ram[0x000E]
-        fine_x = ram[0x0086]
+        current_fine = ram[0x0086]
         if player_state == PlayerState.going_down_a_pipe:
             state = "going down"
         if state == "going down" and coarse_x == 0:
             state = "in shortcut"
         if state == "in shortcut" and player_state == PlayerState.entering_reversed_L_pipe:
             state = "going up"
-        if state == "going up" and player_state == PlayerState.Leftmost_of_screen:
+            # TODO fix going up the pipe
+        if state == "going up" and player_state == 7:
             state = "initial"
         if state == "in shortcut" and (player_state == PlayerState.dying or player_state == PlayerState.player_dies):
             # player might die in shortcut, for example times up
             state = "initial"
-
-        delta_fine = fine_x - last_fine
-        if last_coarse != coarse_x:
-            if fine_state == "alive" and player_state == PlayerState.dying or player_state == PlayerState.player_dies:
-                delta_fine = -fine_x
-                fine_state = "dead"
-            else:
-                delta_fine = 1
-        if state == "going down":
-            fine_pos = 0
 
         coarse_potential_offset = 0
         if state == "in shortcut" or state == "going up":
@@ -110,7 +107,28 @@ def make_fine_potential(kind="delta"):
 
         current_coarse_potential = coarse_x + coarse_potential_offset
 
-        return current_coarse_potential
+        # going up is kinda strange, make it that we have a delta of 0
+        if state == "going up":
+            current_fine = last_fine
+        last_fine = current_fine
+
+        subsections_selector = 2 ** 5
+        adjusted_fine = math.floor(current_fine / subsections_selector) / (256 / subsections_selector)
+        # adjusted_fine = round(current_fine/subsections_selector,0) /subsections_selector
+
+        if kind == "delta":
+            current_sum = current_coarse_potential + adjusted_fine
+            delta_sum = current_sum - last_sum
+            last_sum = current_sum
+            return delta_sum
+        elif kind == "all":
+            return {"state": state,
+                    "player_state": player_state,
+                    "coarse": coarse_x,
+                    "current_sum": current_coarse_potential + adjusted_fine,
+                    "current_coarse_potential": current_coarse_potential}
+        else:
+            return current_coarse_potential + adjusted_fine
 
     return inner_fine_potential
 
@@ -216,8 +234,6 @@ def make_main_reward():
     return sum_of_rewards([delta_potential, scaled_for_time_left])
 
 
-def make_time_left_coarse_fine_potential():
-    delta_potential = make_delta_potential()
-    delta_fine_x_pos = make_delta_fine_x_pos()
-    delta_fine_x_pos_scaled = scale_by(delta_fine_x_pos, 0.1)
-    return sum_of_rewards([delta_potential, scaled_for_time_left, delta_fine_x_pos_scaled])
+def make_fine_main_reward():
+    delta_potential = make_fine_potential(kind="delta")
+    return sum_of_rewards([delta_potential, scaled_for_time_left])
