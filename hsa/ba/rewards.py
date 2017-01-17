@@ -66,9 +66,7 @@ def potential(ram, state):
     return current_potential, state, False
 
 
-
-
-def make_fine_potential(kind="delta"):
+def make_fine_potential(kind="delta", subsections_selector=2 ** 5):
     """kind can be delta, all or normal"""
     state = "initial"
     last_sum = 0
@@ -112,7 +110,6 @@ def make_fine_potential(kind="delta"):
             current_fine = last_fine
         last_fine = current_fine
 
-        subsections_selector = 2 ** 5
         adjusted_fine = math.floor(current_fine / subsections_selector) / (256 / subsections_selector)
         # adjusted_fine = round(current_fine/subsections_selector,0) /subsections_selector
 
@@ -131,6 +128,10 @@ def make_fine_potential(kind="delta"):
             return current_coarse_potential + adjusted_fine
 
     return inner_fine_potential
+
+
+def make_finer_potential():
+    return make_fine_potential(subsections_selector=1)
 
 
 def fine_x_pos(ram, last_coarse_pos):
