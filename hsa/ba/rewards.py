@@ -243,3 +243,9 @@ def make_fine_main_reward():
 def make_finer_main_reward():
     delta_potential = make_finer_potential()
     return sum_of_rewards([delta_potential, scaled_for_time_left])
+
+def make_finer_main_reward_with_points():
+    delta_potential = make_finer_potential()
+    # 50 points should be 0.5
+    delta_points = scale_by(make_delta_points(), 0.1)
+    return sum_of_rewards([delta_potential, scaled_for_time_left, delta_points])
