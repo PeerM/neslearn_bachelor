@@ -251,4 +251,4 @@ def make_finer_main_reward_with_points():
     return sum_of_rewards([delta_potential, scaled_for_time_left, delta_points])
 
 def make_scaled_finer_main_reward_with_points():
-    return scale_by(make_finer_main_reward_with_points, 10)
+    return scale_by(make_finer_main_reward_with_points(), 10)
