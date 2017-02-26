@@ -239,6 +239,10 @@ def make_fine_main_reward():
     delta_potential = make_fine_potential(kind="delta")
     return sum_of_rewards([delta_potential, scaled_for_time_left])
 
+def make_scaled_fine_main_reward():
+    delta_potential = scale_by(make_fine_main_reward(), 10)
+    return sum_of_rewards([delta_potential, scaled_for_time_left])
+
 
 def make_finer_main_reward():
     delta_potential = make_finer_potential()
