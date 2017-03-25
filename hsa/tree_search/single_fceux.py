@@ -1,0 +1,4 @@
+from extern.fceux_learningenv.nes_python_interface.nes_python_interface import NESInterface
+from hsa.machine_constants import mario_rom_location
+
+nes = NESInterface(mario_rom_location,eb_compatible=False)

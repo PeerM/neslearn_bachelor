@@ -1,3 +1,5 @@
+rle_python_interface
+tqdm
 keras
 pandas
 matplotlib
