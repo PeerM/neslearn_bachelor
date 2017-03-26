@@ -4,7 +4,34 @@ from collections import namedtuple
 from hsa.tree_search import heuristics
 from hsa.tree_search.heap import Heap
 
-MarioNode = namedtuple("MarioNode", ["id", "potential", "recv_reward", "state"])
+
+# PlanNode = namedtuple("PlanNode", ["parent", "action", "action_repeat"])
+# ExpandedNode = namedtuple("ExpandedNode", ["plan", "state", "potential", "recv_reward"])
+
+
+class MarioNode(namedtuple("MarioNode", ["potential", "recv_reward", "state", "parent", "action", "action_repeat"])):
+    __slots__ = ()
+
+    def __str__(self):
+        return "MarioNode(potential:{s.potential}, action:{s.action})".format(s=self)
+
+    def __repr__(self):
+        return "MarioNode(potential:{s.potential}, action:{s.action})".format(s=self)
+
+    def __eq__(self, other):
+        return self.state == other.state
+    #
+    # def __gt__(self, other):
+    #     return self.potential.__gt__(other.potential)
+    #
+    # def __lt__(self, other):
+    #     return self.potential.__lt__(other.potential)
+    #
+    # def __ge__(self, other):
+    #     return self.potential.__ge__(other.potential)
+    #
+    # def __le__(self, other):
+    #     return self.potential.__le__(other.potential)
 
 
 class ConfigPack(object):
@@ -18,6 +45,9 @@ class ConfigPack(object):
         self.heuristic = heuristic
         self.action_repeat = action_repeat
         self.nes = nes
+
+    def __str__(self):
+        return str(self.__dict__)
 
 
 class AStarGraph(object):
@@ -37,28 +67,36 @@ class AStarGraph(object):
             reward_for_action = sum([self.config.nes.act(action) for i in range(self.config.action_repeat)])
             if self.config.render_search:
                 self.config.nes.render()
-            new_id = hash((pos.id, action))
             new_potential = self.config.heuristic(self.config.nes.getRAM())
             new_state = self.config.nes.cloneState()
-            n.append(MarioNode(id=new_id, potential=new_potential,
-                               recv_reward=reward_for_action, state=new_state))
+            n.append(MarioNode(potential=new_potential,
+                               recv_reward=reward_for_action, state=new_state,
+                               parent=pos, action=action, action_repeat=self.config.action_repeat))
         return n
 
 
-def make_start(config, reset=False):
+def make_start(nes, heuristic, reset=True):
     if reset:
-        config.nes.reset_game()
+        nes.reset_game()
         for i in range(160):
-            config.nes.act(0)
-    reward = config.nes.act(0)
-    state = config.nes.cloneState()
-    potential = config.heuristic(config.nes.getRAM())
-    return MarioNode(id="astart", potential=potential, recv_reward=reward, state=state)
+            nes.act(0)
+    reward = nes.act(0)
+    state = nes.cloneState()
+    potential = heuristic(nes.getRAM())
+    return MarioNode(potential=potential, recv_reward=reward, state=state, parent=None, action=None, action_repeat=None)
 
 
 def render_node(node, nes):
     nes.restoreState(node.state)
     nes.render()
+
+
+def walk_nodes(node: MarioNode):
+    # would be a nice place to do recursion with yield from
+    current_pos = node
+    while current_pos.parent is not None:
+        yield (current_pos.action, current_pos.action_repeat)
+        current_pos = current_pos.parent
 
 
 def best_first(start, graph, config):

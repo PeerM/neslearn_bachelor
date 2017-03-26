@@ -7,7 +7,7 @@ nes = NESInterface(mario_rom_location, eb_compatible=False)
 
 config = fceux_a_star.ConfigPack(nes, render_search=False, nr_nodes_to_expand=50)
 
-start = fceux_a_star.make_start(config, reset=True)
+start = fceux_a_star.make_start(nes, config.heuristic, reset=True)
 
 graph = fceux_a_star.AStarGraph(config)
 
@@ -16,7 +16,7 @@ for i, current_best in enumerate(fceux_a_star.best_first(start, graph, config)):
     best = current_best
     # nes.render()
     # ipywidgets.IntProgress(value=i, max=100)
-    fceux_a_star.render_node(current_best,nes)
+    fceux_a_star.render_node(current_best, nes)
     print(i)
 
 # ## Debug analysis
