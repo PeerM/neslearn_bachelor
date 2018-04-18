@@ -14,12 +14,13 @@ from hsa.reward_evaluation import mario_x_speed
 
 logger = logging.getLogger(__name__)
 
-# from extern.fceux_learningenv.nes_python_interface.nes_python_interface import NESInterface
-
 try:
-    from nes_python_interface import NESInterface
+    from extern.fceux_learningenv.nes_python_interface.nes_python_interface import NESInterface
 except ImportError as e:
-    raise error.DependencyNotInstalled("{}. (HINT: build and install fceux interface)".format(e))
+    try:
+        from nes_python_interface import NESInterface
+    except ImportError as e:
+        raise error.DependencyNotInstalled("{}. (HINT: build and install fceux interface)".format(e))
 
 
 class NesEnv(Env):
@@ -109,4 +110,4 @@ class NesEnv(Env):
         pass
 
     def get_action_meanings(self):
-        return [rdqn_to_py(i) for i in NesEnv.nr_actions]
+        return [rdqn_to_py(i) for i in range(NesEnv.nr_actions)]

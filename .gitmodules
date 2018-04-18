@@ -1,17 +1,7 @@
 [submodule "extern/fceux_learningenv"]
 	path = extern/fceux_learningenv
 	url = git@github.com:PeerM/FCEUX_Learning_Environment.git
-[submodule "extern/kerlym"]
-	path = extern/kerlym
-	url = https://github.com/PeerM/kerlym.git
-[submodule "extern/muupan-async-rl"]
-	path = extern/muupan-async-rl
-	url = git@github.com:muupan/async-rl.git
 [submodule "extern/nes-async-rl"]
 	path = extern/nes-async-rl
 	url = https://github.com/PeerM/async-rl-fork.git
 	branch = origin/eb
-[submodule "extern/gym-async-rl"]
-	path = extern/gym-async-rl
-	url = https://github.com/PeerM/async-rl-fork.git
-	branch = origin/gym
