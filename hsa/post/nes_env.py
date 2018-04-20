@@ -25,13 +25,14 @@ except ImportError as e:
 
 class NesEnv(Env):
     metadata = {'render.modes': ['human', 'rgb_array']}
-    nr_actions = 36
+    nr_actions = 15
 
-    def __init__(self, game_path="~/mario.nes", frameskip=1, obs_type="ram", nes=None):
+    def __init__(self, game_path="~/mario.nes", frameskip=1, obs_type="ram", nes=None, raw_actions=False):
         """
             :arg score_compatibility witch scoring system to be compatible to
         """
 
+        self.raw_actions = raw_actions
         assert obs_type in ('ram', 'image')
         if nes is None:
             game_path = game_path
@@ -49,6 +50,7 @@ class NesEnv(Env):
         self._buffer = np.empty((screen_height, screen_width, 4), dtype=np.uint8)
 
         self.action_space = spaces.Discrete(NesEnv.nr_actions)
+        self.legal_actions = nes.getMinimalActionSet()
 
         (screen_width, screen_height) = self.nes.getScreenDims()
         if self._obs_type == 'ram':
@@ -70,7 +72,10 @@ class NesEnv(Env):
             return self.nes.getScreenRGB()
 
     def _step(self, action):
-        encoded_action = py_to_nes_wrapper(rdqn_to_py(action))
+        if self.raw_actions:
+            encoded_action = action
+        else:
+            encoded_action = self.legal_actions[action]
         reward = 0.0
         num_steps = self.frameskip
         for _ in range(num_steps):

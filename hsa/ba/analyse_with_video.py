@@ -41,12 +41,10 @@ def plot_rewards(rewards):
 
 # nes.reset_game() # only needed if the movie skips the beginning
 
-def play_and_record(movie_path,video_name, reward_func):
+def play_and_record(movie_path,video_name):
     movie_writer = imageio.get_writer(video_name, fps=60, quality=9)
     nes = NESInterface(hsa.machine_constants.mario_rom_location, eb_compatible=False,
-                       auto_render_period=3,
-                       reward_type=RewardTypes.simple_function,
-                       reward_function=reward_func)
+                       auto_render_period=3)
     with open(movie_path) as movie_file:
         inputs_from_movie = list(parse_fm2(movie_file))
 
@@ -78,7 +76,7 @@ def play_and_record(movie_path,video_name, reward_func):
 
 def main():
     # play_and_record(movie_path="../movies/5_1-1_without-shortcut.fm2", video_name="default.mp4",reward_func=hsa.ba.rewards.make_main_reward())
-    play_and_record(movie_path="../movies/5_1-1_without-shortcut.fm2", video_name = "5_ehrenbrav.mp4", reward_func="ehrenbrav")
+    play_and_record(movie_path="../movies/5_1-1_without-shortcut.fm2", video_name = "5_ehrenbrav.mp4")
 
 
 if __name__ == '__main__':

@@ -5,3 +5,6 @@
 	path = extern/nes-async-rl
 	url = https://github.com/PeerM/async-rl-fork.git
 	branch = origin/eb
+[submodule "extern/worldmodels"]
+	path = extern/worldmodels
+	url = https://github.com/PeerM/WorldModels
